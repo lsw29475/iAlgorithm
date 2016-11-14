@@ -139,8 +139,8 @@ BOOL CAES::AesInit(BYTE* pKey, int KeySize, int EncryptMode)
 		EncryptType = AES_CBC;
 		break;
 
-	case AES_FBC:
-		EncryptType = AES_FBC;
+	case AES_CFB:
+		EncryptType = AES_CFB;
 		break;
 
 	default:
@@ -402,6 +402,11 @@ BOOL CAES::Encrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		return FALSE;
 	}
 
+	if (EncryptType != AES_EBC)
+	{
+		return FALSE;
+	}
+
 	for (int i = 0; i < BufferInSize / 16; i++)
 	{
 		AesRoundEncrypt(pBufferIn + i * 16, pBufferOut + i * 16);
@@ -422,6 +427,11 @@ BOOL CAES::Decrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		return FALSE;
 	}
 
+	if (EncryptType != AES_EBC)
+	{
+		return FALSE;
+	}
+
 	for (int i = 0; i < BufferInSize / 16; i++)
 	{
 		AesRoundDecrypt(pBufferIn + i * 16, pBufferOut + i * 16);
@@ -432,10 +442,132 @@ BOOL CAES::Decrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 
 BOOL CAES::Encrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
 {
+	if (BufferInSize % 16 != 0)
+	{
+		return FALSE;
+	}
+
+	if (BufferOutSize < BufferInSize)
+	{
+		return FALSE;
+	}
+
+	if (EncryptType != AES_CBC)
+	{
+		return FALSE;
+	}
+
+	for (int i = 0; i < BufferInSize / 16; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			Iv[j] ^= *(pBufferIn + i * 16 + j);
+		}
+		AesRoundEncrypt(Iv, pBufferOut + i * 16);
+		AesSetIv(pBufferOut + i * 16);
+	}
+
 	return TRUE;
 }
 
 BOOL CAES::Decrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
 {
+	if (BufferInSize % 16 != 0)
+	{
+		return FALSE;
+	}
+
+	if (BufferOutSize < BufferInSize)
+	{
+		return FALSE;
+	}
+
+	if (EncryptType != AES_CBC)
+	{
+		return FALSE;
+	}
+
+	for (int i = 0; i < BufferInSize / 16; i++)
+	{
+		AesRoundDecrypt(pBufferIn + i * 16, pBufferOut + i * 16);
+		for (int j = 0; j < 16; j++)
+		{
+			*(pBufferOut + i * 16 + j) ^= Iv[j];
+		}
+		AesSetIv(pBufferIn + i * 16);
+	}
+
+	return TRUE;
+}
+
+BOOL CAES::Encrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+{
+	if (BufferInSize % 16 != 0)
+	{
+		return FALSE;
+	}
+
+	if (BufferOutSize < BufferInSize)
+	{
+		return FALSE;
+	}
+
+	if (EncryptType != AES_CFB)
+	{
+		return FALSE;
+	}
+
+	for (int i = 0; i < BufferInSize / 16; i++)
+	{
+		AesRoundEncrypt(Iv, Iv);
+		for (int j = 0; j < 16; j++)
+		{
+			Iv[j] ^= *(pBufferIn + i * 16 + j);
+		}
+		memcpy(pBufferOut + i * 16, Iv, 16);
+	}
+
+	return TRUE;
+}
+
+BOOL CAES::Decrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+{
+	if (BufferInSize % 16 != 0)
+	{
+		return FALSE;
+	}
+
+	if (BufferOutSize < BufferInSize)
+	{
+		return FALSE;
+	}
+
+	if (EncryptType != AES_CFB)
+	{
+		return FALSE;
+	}
+
+	for (int i = 0; i < BufferInSize / 16; i++)
+	{
+		AesRoundEncrypt(Iv, Iv);
+		for (int j = 0; j < 16; j++)
+		{
+			Iv[j] ^= *(pBufferIn + i * 16 + j);
+		}
+		memcpy(pBufferOut + i * 16, pBufferIn + i * 16, 16);
+		for (int j = 0; j < 16; j++)
+		{
+			Iv[j] ^= *(pBufferOut + i * 16 + j);
+		}
+		for (int j = 0; j < 16; j++)
+		{
+			*(pBufferOut + i * 16 + j) ^= Iv[j];
+		}
+		for (int j = 0; j < 16; j++)
+		{
+			Iv[j] ^= *(pBufferOut + i * 16 + j);
+		}
+	}
+
 	return TRUE;
 }

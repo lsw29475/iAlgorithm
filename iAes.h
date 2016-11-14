@@ -20,7 +20,7 @@ public:
 	{
 		AES_EBC = 1,
 		AES_CBC = 2,
-		AES_FBC = 3,
+		AES_CFB = 3,
 	};
 
 private:
@@ -40,12 +40,17 @@ private:
 
 public:
 	VOID AesSetIv(BYTE* pSetIv);
+
 	BOOL AesInit(BYTE* pKey, int KeySize, int EncryptMode);
+
 	BOOL Encrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
 	BOOL Decrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
 
 	BOOL Encrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
 	BOOL Decrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
+
+	BOOL Encrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
+	BOOL Decrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
 
 private:
 	BOOL SetAESKey(BYTE* pKey, int KeySize);
