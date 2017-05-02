@@ -1,12 +1,10 @@
 #pragma once
 
-#include <windows.h>
-
 class _declspec(dllexport) CAES
 {
 public:
-	CAES(VOID);
-	~CAES(VOID);
+	CAES(void);
+	~CAES(void);
 
 public:
 	enum AES_TYPE
@@ -18,7 +16,7 @@ public:
 
 	enum AES_ENCRYPT_MODE
 	{
-		AES_EBC = 1,
+		AES_ECB = 1,
 		AES_CBC = 2,
 		AES_CFB = 3,
 	};
@@ -27,54 +25,54 @@ private:
 	int Nk;
 	int Nr;
 	static const int Nb;
-	ULONG key[8];
-	BYTE Iv[16];
-	ULONG RoundKey[60];
+	unsigned long key[8];
+	unsigned char Iv[16];
+	unsigned long RoundKey[60];
 	int AesType;
 	int EncryptType;
 
 private:
-	static const ULONG Rcon[11];
-	static const BYTE SBox[256];
-	static const BYTE InvSBox[256];
+	static const unsigned long Rcon[11];
+	static const unsigned char SBox[256];
+	static const unsigned char InvSBox[256];
 
 public:
-	VOID AesSetIv(BYTE* pSetIv);
+	void AesSetIv(unsigned char* pSetIv);
 
-	BOOL AesInit(BYTE* pKey, int KeySize, int EncryptMode);
+	bool AesInit(unsigned char* pKey, int KeySize, int EncryptMode);
 
-	BOOL Encrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
-	BOOL Decrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
+	bool Encrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool Decrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
 
-	BOOL Encrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
-	BOOL Decrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
+	bool Encrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool Decrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
 
-	BOOL Encrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
-	BOOL Decrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
+	bool Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
 
 private:
-	BOOL SetAESKey(BYTE* pKey, int KeySize);
-	VOID AesRoundEncrypt(BYTE* pBlockIn, BYTE* pBlockOut);
-	VOID AesRoundDecrypt(BYTE* pBlockIn, BYTE* pBlockOut);
+	bool SetAESKey(unsigned char* pKey, int KeySize);
+	void AesRoundEncrypt(unsigned char* pBlockIn, unsigned char* pBlockOut);
+	void AesRoundDecrypt(unsigned char* pBlockIn, unsigned char* pBlockOut);
 
 private:
 	//对密钥进行拓展，拓展为轮密钥
-	VOID AESKeyExpansion();
+	void AESKeyExpansion();
 	//将状态元素与轮密钥进行简单亦或运算
-	VOID AddRoundKey(BYTE* pState, BYTE* pRoundKey);
+	void AddRoundKey(unsigned char* pState, unsigned char* pRoundKey);
 	//SubBytes  以状态数组中每个字节元素的高4位作行标，低4位作列标，取对应SBox元素
-	VOID SubBytes(BYTE* pState);
+	void SubBytes(unsigned char* pState);
 	//对状态数组进行位移
-	VOID ShiftRows(BYTE* pState);
+	void ShiftRows(unsigned char* pState);
 	//对状态数组进行矩阵相乘运算
-	VOID MixColumns(BYTE* State);
+	void MixColumns(unsigned char* State);
 
-	VOID InvSubBytes(BYTE* pState);
-	VOID InvShiftRows(BYTE* pState);
-	VOID InvMixColumns(BYTE* pState);
+	void InvSubBytes(unsigned char* pState);
+	void InvShiftRows(unsigned char* pState);
+	void InvMixColumns(unsigned char* pState);
 
 private:
-	BYTE xtime(BYTE cByte);
-	VOID SubWord(BYTE* dwTemp);
-	VOID RotWord(BYTE* dwTemp);
+	unsigned char xtime(unsigned char cByte);
+	void SubWord(unsigned char* dwTemp);
+	void RotWord(unsigned char* dwTemp);
 };

@@ -1,6 +1,7 @@
 #include "iAes.h"
+#include "macro.h"
 
-const BYTE CAES::SBox[256] = {
+const unsigned char CAES::SBox[256] = {
 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5,
 	0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
 	0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
@@ -35,7 +36,7 @@ const BYTE CAES::SBox[256] = {
 	0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 };
 
-const BYTE CAES::InvSBox[256] = {
+const unsigned char CAES::InvSBox[256] = {
 	0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38,
 	0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
 	0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87,
@@ -70,39 +71,39 @@ const BYTE CAES::InvSBox[256] = {
 	0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
 
-const ULONG CAES::Rcon[11] = {
+const unsigned long CAES::Rcon[11] = {
 	0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
 };
 
 const int CAES::Nb = 4;
 
-CAES::CAES(VOID)
+CAES::CAES(void)
 {
 
 }
 
-CAES::~CAES(VOID)
+CAES::~CAES(void)
 {
 
 }
 
-BOOL CAES::SetAESKey(BYTE* pKey, int KeySize)
+bool CAES::SetAESKey(unsigned char* pKey, int KeySize)
 {
 	if (KeySize != 16 && KeySize != 24 && KeySize != 32)
 	{
-		return FALSE;
+		return false;
 	}
 
 	memcpy(key, pKey, KeySize);
 
-	return TRUE;
+	return true;
 }
 
-BOOL CAES::AesInit(BYTE* pKey, int KeySize, int EncryptMode)
+bool CAES::AesInit(unsigned char* pKey, int KeySize, int EncryptMode)
 {
 	if (!SetAESKey(pKey, KeySize))
 	{
-		return FALSE;
+		return false;
 	}
 
 	switch (KeySize)
@@ -126,13 +127,13 @@ BOOL CAES::AesInit(BYTE* pKey, int KeySize, int EncryptMode)
 		break;
 
 	default:
-		return FALSE;
+		return false;
 	}
 
 	switch (EncryptMode)
 	{
-	case AES_EBC:
-		EncryptType = AES_EBC;
+	case AES_ECB:
+		EncryptType = AES_ECB;
 		break;
 
 	case AES_CBC:
@@ -144,23 +145,23 @@ BOOL CAES::AesInit(BYTE* pKey, int KeySize, int EncryptMode)
 		break;
 
 	default:
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
-VOID CAES::AesSetIv(BYTE* pSetIv)
+void CAES::AesSetIv(unsigned char* pSetIv)
 {
 	memcpy(Iv, pSetIv, 16);
 }
 
-BYTE CAES::xtime(BYTE cByte)
+unsigned char CAES::xtime(unsigned char cByte)
 {
 	return cByte >= 0x80 ? (cByte << 1) ^ 0x1b : cByte << 1;
 }
 
-VOID CAES::SubWord(BYTE* dwTemp)
+void CAES::SubWord(unsigned char* dwTemp)
 {
 	dwTemp[0] = SBox[dwTemp[0]];
 	dwTemp[1] = SBox[dwTemp[1]];
@@ -168,16 +169,16 @@ VOID CAES::SubWord(BYTE* dwTemp)
 	dwTemp[3] = SBox[dwTemp[3]];
 }
 
-VOID CAES::RotWord(BYTE* dwTemp)
+void CAES::RotWord(unsigned char* dwTemp)
 {
-	BYTE cTmp = dwTemp[0];
+	unsigned char cTmp = dwTemp[0];
 	dwTemp[0] = dwTemp[1];
 	dwTemp[1] = dwTemp[2];
 	dwTemp[2] = dwTemp[3];
 	dwTemp[3] = cTmp;
 }
 
-VOID CAES::SubBytes(BYTE* pState)
+void CAES::SubBytes(unsigned char* pState)
 {
 	for (int i = 0; i < Nb * 4; i++)
 	{
@@ -185,7 +186,7 @@ VOID CAES::SubBytes(BYTE* pState)
 	}
 }
 
-VOID CAES::InvSubBytes(BYTE* pState)
+void CAES::InvSubBytes(unsigned char* pState)
 {
 	for (int i = 0; i < Nb * 4; i++)
 	{
@@ -193,14 +194,14 @@ VOID CAES::InvSubBytes(BYTE* pState)
 	}
 }
 
-VOID CAES::MixColumns(BYTE* State)
+void CAES::MixColumns(unsigned char* State)
 {
-	BYTE temp[4][4] = { 0x00 };
-	BYTE out[4][4] = { 0x00 };
+	unsigned char temp[4][4] = { 0x00 };
+	unsigned char out[4][4] = { 0x00 };
 
 	memcpy(temp, State, 16);
 
-	for (ULONG j = 0; j < 4; j++)
+	for (unsigned long j = 0; j < 4; j++)
 	{
 		out[j][0] = xtime(temp[j][0]) ^ xtime(temp[j][1]) ^ temp[j][1] ^ temp[j][2] ^ temp[j][3];
 		out[j][1] = temp[j][0] ^ xtime(temp[j][1]) ^ xtime(temp[j][2]) ^ temp[j][2] ^ temp[j][3];
@@ -211,15 +212,15 @@ VOID CAES::MixColumns(BYTE* State)
 	memcpy(State, out, 16);
 }
 
-VOID CAES::InvMixColumns(BYTE* State)
+void CAES::InvMixColumns(unsigned char* State)
 {
-	BYTE temp[4][4] = { 0x00 };
-	BYTE out[4][4] = { 0x00 };
-	BYTE tmp;
+	unsigned char temp[4][4] = { 0x00 };
+	unsigned char out[4][4] = { 0x00 };
+	unsigned char tmp;
 
 	memcpy(temp, State, 16);
 
-	for (ULONG j = 0; j < 4; j++)
+	for (unsigned long j = 0; j < 4; j++)
 	{
 		tmp = xtime(xtime(xtime(temp[j][0] ^ temp[j][1] ^ temp[j][2] ^ temp[j][3])));
 		out[j][0] = xtime(xtime(temp[j][0] ^ temp[j][2])) ^ temp[j][1] ^ temp[j][2] ^ temp[j][3] ^ xtime(temp[j][0] ^ temp[j][1]) ^ tmp;
@@ -231,87 +232,87 @@ VOID CAES::InvMixColumns(BYTE* State)
 	memcpy(State, out, 16);
 }
 
-VOID CAES::ShiftRows(BYTE* pState)
+void CAES::ShiftRows(unsigned char* pState)
 {
-	BYTE Temp;
+	unsigned char Temp;
 
-	for (ULONG i = 0; i <= 3; i++)
+	for (unsigned long i = 0; i <= 3; i++)
 	{
 		if (i == 1)
 		{
-			Temp = *(BYTE*)(pState + i);
-			*(BYTE*)(pState + i) = *(BYTE*)(pState + i + 4);
-			*(BYTE*)(pState + i + 4) = *(BYTE*)(pState + i + 4 * 2);
-			*(BYTE*)(pState + i + 4 * 2) = *(BYTE*)(pState + i + 4 * 3);
-			*(BYTE*)(pState + i + 4 * 3) = Temp;
+			Temp = *(unsigned char*)(pState + i);
+			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4);
+			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i + 4 * 2);
+			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i + 4 * 3);
+			*(unsigned char*)(pState + i + 4 * 3) = Temp;
 		}
 
 		if (i == 2)
 		{
-			Temp = *(BYTE*)(pState + i);
-			*(BYTE*)(pState + i) = *(BYTE*)(pState + i + 4 * 2);
-			*(BYTE*)(pState + i + 4 * 2) = Temp;
-			Temp = *(BYTE*)(pState + i + 4);
-			*(BYTE*)(pState + i + 4) = *(BYTE*)(pState + i + 4 * 3);
-			*(BYTE*)(pState + i + 4 * 3) = Temp;
+			Temp = *(unsigned char*)(pState + i);
+			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4 * 2);
+			*(unsigned char*)(pState + i + 4 * 2) = Temp;
+			Temp = *(unsigned char*)(pState + i + 4);
+			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i + 4 * 3);
+			*(unsigned char*)(pState + i + 4 * 3) = Temp;
 		}
 
 		if (i == 3)
 		{
-			Temp = *(BYTE*)(pState + i);
-			*(BYTE*)(pState + i) = *(BYTE*)(pState + i + 4 * 3);
-			*(BYTE*)(pState + i + 4 * 3) = *(BYTE*)(pState + i + 4 * 2);
-			*(BYTE*)(pState + i + 4 * 2) = *(BYTE*)(pState + i + 4);
-			*(BYTE*)(pState + i + 4) = Temp;
+			Temp = *(unsigned char*)(pState + i);
+			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4 * 3);
+			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i + 4 * 2);
+			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i + 4);
+			*(unsigned char*)(pState + i + 4) = Temp;
 		}
 	}
 }
 
-VOID CAES::InvShiftRows(BYTE* pState)
+void CAES::InvShiftRows(unsigned char* pState)
 {
-	BYTE Temp;
+	unsigned char Temp;
 
-	for (ULONG i = 0; i <= 3; i++)
+	for (unsigned long i = 0; i <= 3; i++)
 	{
 		if (i == 1)
 		{
-			Temp = *(BYTE*)(pState + i + 4 * 3);
-			*(BYTE*)(pState + i + 4 * 3) = *(BYTE*)(pState + i + 4 * 2);
-			*(BYTE*)(pState + i + 4 * 2) = *(BYTE*)(pState + i + 4);
-			*(BYTE*)(pState + i + 4) = *(BYTE*)(pState + i);
-			*(BYTE*)(pState + i) = Temp;
+			Temp = *(unsigned char*)(pState + i + 4 * 3);
+			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i + 4 * 2);
+			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i + 4);
+			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i);
+			*(unsigned char*)(pState + i) = Temp;
 		}
 
 		if (i == 2)
 		{
-			Temp = *(BYTE*)(pState + i + 4 * 3);
-			*(BYTE*)(pState + i + 4 * 3) = *(BYTE*)(pState + i + 4);
-			*(BYTE*)(pState + i + 4) = Temp;
-			Temp = *(BYTE*)(pState + i + 4 * 2);
-			*(BYTE*)(pState + i + 4 * 2) = *(BYTE*)(pState + i);
-			*(BYTE*)(pState + i) = Temp;
+			Temp = *(unsigned char*)(pState + i + 4 * 3);
+			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i + 4);
+			*(unsigned char*)(pState + i + 4) = Temp;
+			Temp = *(unsigned char*)(pState + i + 4 * 2);
+			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i);
+			*(unsigned char*)(pState + i) = Temp;
 		}
 
 		if (i == 3)
 		{
-			Temp = *(BYTE*)(pState + i + 4 * 3);
-			*(BYTE*)(pState + i + 4 * 3) = *(BYTE*)(pState + i);
-			*(BYTE*)(pState + i) = *(BYTE*)(pState + i + 4);
-			*(BYTE*)(pState + i + 4) = *(BYTE*)(pState + i + 4 * 2);
-			*(BYTE*)(pState + i + 4 * 2) = Temp;
+			Temp = *(unsigned char*)(pState + i + 4 * 3);
+			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i);
+			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4);
+			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i + 4 * 2);
+			*(unsigned char*)(pState + i + 4 * 2) = Temp;
 		}
 	}
 }
 
-VOID CAES::AddRoundKey(BYTE* pState, BYTE* pRoundKey)
+void CAES::AddRoundKey(unsigned char* pState, unsigned char* pRoundKey)
 {
-	for (ULONG i = 0; i < 16; i++)
+	for (unsigned long i = 0; i < 16; i++)
 	{
 		pState[i] ^= pRoundKey[i];
 	}
 }
 
-VOID CAES::AESKeyExpansion()
+void CAES::AESKeyExpansion()
 {
 	int i = 0;
 	DWORD dwTemp;
@@ -326,13 +327,13 @@ VOID CAES::AESKeyExpansion()
 		dwTemp = RoundKey[i - 1];
 		if (i % Nk == 0)
 		{
-			RotWord((BYTE*)&dwTemp);
-			SubWord((BYTE*)&dwTemp);
+			RotWord((unsigned char*)&dwTemp);
+			SubWord((unsigned char*)&dwTemp);
 			dwTemp ^= Rcon[i / Nk];
 		}
 		else if ((Nk > 6) && (i % Nk == 4))
 		{
-			SubWord((BYTE*)&dwTemp);
+			SubWord((unsigned char*)&dwTemp);
 		}
 
 		RoundKey[i] = RoundKey[i - Nk] ^ dwTemp;
@@ -340,71 +341,71 @@ VOID CAES::AESKeyExpansion()
 	}
 }
 
-VOID CAES::AesRoundEncrypt(BYTE* pBlockIn, BYTE* pBlockOut)
+void CAES::AesRoundEncrypt(unsigned char* pBlockIn, unsigned char* pBlockOut)
 {
-	BYTE state[4][4] = { 0x00 };
+	unsigned char state[4][4] = { 0x00 };
 
 	memcpy(state, pBlockIn, 16);
 
 	AESKeyExpansion();
 
-	AddRoundKey((BYTE*)state, (BYTE*)RoundKey);
+	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey);
 
 	for (int ulRound = 1; ulRound <= Nr - 1; ulRound++)
 	{
-		SubBytes((BYTE*)state);
-		ShiftRows((BYTE*)state);
-		MixColumns((BYTE*)state);
-		AddRoundKey((BYTE*)state, (BYTE*)RoundKey + ulRound * 16);
+		SubBytes((unsigned char*)state);
+		ShiftRows((unsigned char*)state);
+		MixColumns((unsigned char*)state);
+		AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + ulRound * 16);
 	}
 
-	SubBytes((BYTE*)state);
-	ShiftRows((BYTE*)state);
-	AddRoundKey((BYTE*)state, (BYTE*)RoundKey + Nr * 16);
+	SubBytes((unsigned char*)state);
+	ShiftRows((unsigned char*)state);
+	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16);
 
 	memcpy(pBlockOut, state, 16);
 }
 
-VOID CAES::AesRoundDecrypt(BYTE* pBlockIn, BYTE* pBlockOut)
+void CAES::AesRoundDecrypt(unsigned char* pBlockIn, unsigned char* pBlockOut)
 {
-	BYTE state[4][4] = { 0x00 };
+	unsigned char state[4][4] = { 0x00 };
 
 	memcpy(state, pBlockIn, 16);
 
 	AESKeyExpansion();
 
-	AddRoundKey((BYTE*)state, (BYTE*)RoundKey + Nr * 16);
+	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16);
 
 	for (int ulRound = 1; ulRound <= Nr - 1; ulRound++)
 	{
-		InvShiftRows((BYTE*)state);
-		InvSubBytes((BYTE*)state);
-		AddRoundKey((BYTE*)state, (BYTE*)RoundKey + Nr * 16 - ulRound * 16);
-		InvMixColumns((BYTE*)state);
+		InvShiftRows((unsigned char*)state);
+		InvSubBytes((unsigned char*)state);
+		AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16 - ulRound * 16);
+		InvMixColumns((unsigned char*)state);
 	}
 
-	InvShiftRows((BYTE*)state);
-	InvSubBytes((BYTE*)state);
-	AddRoundKey((BYTE*)state, (BYTE*)RoundKey);
+	InvShiftRows((unsigned char*)state);
+	InvSubBytes((unsigned char*)state);
+	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey);
 
 	memcpy(pBlockOut, state, 16);
 }
 
-BOOL CAES::Encrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CAES::Encrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize)
 	{
-		return FALSE;
+		return false;
 	}
 
-	if (EncryptType != AES_EBC)
+	if (EncryptType != AES_ECB)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for (int i = 0; i < BufferInSize / 16; i++)
@@ -412,24 +413,24 @@ BOOL CAES::Encrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		AesRoundEncrypt(pBufferIn + i * 16, pBufferOut + i * 16);
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL CAES::Decrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CAES::Decrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize)
 	{
-		return FALSE;
+		return false;
 	}
 
-	if (EncryptType != AES_EBC)
+	if (EncryptType != AES_ECB)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for (int i = 0; i < BufferInSize / 16; i++)
@@ -437,24 +438,24 @@ BOOL CAES::Decrypt_EBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		AesRoundDecrypt(pBufferIn + i * 16, pBufferOut + i * 16);
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL CAES::Encrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CAES::Encrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (EncryptType != AES_CBC)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for (int i = 0; i < BufferInSize / 16; i++)
@@ -467,24 +468,24 @@ BOOL CAES::Encrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		AesSetIv(pBufferOut + i * 16);
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL CAES::Decrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CAES::Decrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (EncryptType != AES_CBC)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for (int i = 0; i < BufferInSize / 16; i++)
@@ -497,24 +498,24 @@ BOOL CAES::Decrypt_CBC(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		AesSetIv(pBufferIn + i * 16);
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL CAES::Encrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CAES::Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (EncryptType != AES_CFB)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for (int i = 0; i < BufferInSize / 16; i++)
@@ -527,24 +528,24 @@ BOOL CAES::Encrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		memcpy(pBufferOut + i * 16, Iv, 16);
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL CAES::Decrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CAES::Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (EncryptType != AES_CFB)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for (int i = 0; i < BufferInSize / 16; i++)
@@ -569,5 +570,5 @@ BOOL CAES::Decrypt_CFB(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 		}
 	}
 
-	return TRUE;
+	return true;
 }
