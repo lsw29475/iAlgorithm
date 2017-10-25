@@ -16,24 +16,24 @@ CSHA1::~CSHA1(VOID)
 
 }
 
-VOID CSHA1::SetBaseData(BYTE* pBaseDataIn)
+VOID CSHA1::SetBaseData(unsigned char* pBaseDataIn)
 {
 	memcpy(BaseData, pBaseDataIn, 20);
 }
 
-VOID CSHA1::GetBaseData(BYTE* pBaseDataOut)
+VOID CSHA1::GetBaseData(unsigned char* pBaseDataOut)
 {
 	memcpy(pBaseDataOut, BaseData, 20);
 }
 
-VOID CSHA1::SetCalcData(BYTE* pCalcDataIn)
+VOID CSHA1::SetCalcData(unsigned char* pCalcDataIn)
 {
 	memcpy(CalcData, pCalcDataIn, 64);
 }
 
-BOOL CSHA1::InitHash(BYTE* pBaseData)
+bool CSHA1::InitHash(unsigned char* pBaseData)
 {
-	BYTE InitData[20] = { 
+	unsigned char InitData[20] = { 
 		0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0xF0, 0xE1, 0xD2, 0xC3
 	};
 
@@ -49,9 +49,9 @@ BOOL CSHA1::InitHash(BYTE* pBaseData)
 	return TRUE;
 }
 
-BOOL CSHA1::CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut)
+bool CSHA1::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut)
 {
-	ULONG DataBuf[16];
+	unsigned int DataBuf[16];
 	int LastSize;
 	int i;
 
@@ -67,29 +67,29 @@ BOOL CSHA1::CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut)
 		{
 			memset(DataBuf, 0x00, sizeof(DataBuf));
 			memcpy(DataBuf, pBufferIn + i * 64, sizeof(DataBuf));
-			SetCalcData((BYTE*)DataBuf);
+			SetCalcData((unsigned char*)DataBuf);
 			Sha1Calc();
 		}
 		else if (LastSize < 64 && LastSize >= 56)
 		{
 			memset(DataBuf, 0x00, sizeof(DataBuf));
 			memcpy(DataBuf, pBufferIn + i * 64, LastSize);
-			*(BYTE*)((BYTE*)DataBuf + LastSize) = 0x80;
-			SetCalcData((BYTE*)DataBuf);
+			*(unsigned char*)((unsigned char*)DataBuf + LastSize) = 0x80;
+			SetCalcData((unsigned char*)DataBuf);
 			Sha1Calc();
 
 			memset(DataBuf, 0x00, sizeof(DataBuf));
-			*(PULONGLONG)((BYTE*)DataBuf + 56) = Tranverse64(BufferInSize * 8);
-			SetCalcData((BYTE*)DataBuf);
+			*(unsigned long long*)((unsigned char*)DataBuf + 56) = Tranverse64(BufferInSize * 8);
+			SetCalcData((unsigned char*)DataBuf);
 			Sha1Calc();
 		}
 		else if (LastSize < 56)
 		{
 			memset(DataBuf, 0x00, sizeof(DataBuf));
 			memcpy(DataBuf, pBufferIn + i * 64, LastSize);
-			*(BYTE*)((BYTE*)DataBuf + LastSize) = 0x80;
-			*(PULONGLONG)((BYTE*)DataBuf + 56) = Tranverse64(BufferInSize * 8);
-			SetCalcData((BYTE*)DataBuf);
+			*(unsigned char*)((unsigned char*)DataBuf + LastSize) = 0x80;
+			*(unsigned long long*)((unsigned char*)DataBuf + 56) = Tranverse64(BufferInSize * 8);
+			SetCalcData((unsigned char*)DataBuf);
 			Sha1Calc();
 		}
 	}
@@ -101,16 +101,16 @@ BOOL CSHA1::CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut)
 
 VOID CSHA1::Sha1Calc()
 {
-	ULONG W[80];
+	unsigned int W[80];
 	int i;
 
-	ULONG a = BaseData[0];
-	ULONG b = BaseData[1];
-	ULONG c = BaseData[2];
-	ULONG d = BaseData[3];
-	ULONG e = BaseData[4];
+	unsigned int a = BaseData[0];
+	unsigned int b = BaseData[1];
+	unsigned int c = BaseData[2];
+	unsigned int d = BaseData[3];
+	unsigned int e = BaseData[4];
 
-	ULONG Temp;
+	unsigned int Temp;
 
 	for (i = 0; i < 16; i++)
 	{

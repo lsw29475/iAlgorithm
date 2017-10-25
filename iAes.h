@@ -60,8 +60,8 @@ private:
 	void AESKeyExpansion();
 	//将状态元素与轮密钥进行简单亦或运算
 	void AddRoundKey(unsigned char* pState, unsigned char* pRoundKey);
-	//SubBytes  以状态数组中每个字节元素的高4位作行标，低4位作列标，取对应SBox元素
-	void SubBytes(unsigned char* pState);
+	//Subunsigned chars  以状态数组中每个字节元素的高4位作行标，低4位作列标，取对应SBox元素
+	void SubByte(unsigned char* pState);
 	//对状态数组进行位移
 	void ShiftRows(unsigned char* pState);
 	//对状态数组进行矩阵相乘运算

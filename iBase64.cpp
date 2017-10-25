@@ -1,6 +1,6 @@
 #include "iBase64.h"
 
-const BYTE CBASE64::Base64Table[64] = {
+const unsigned char CBASE64::Base64Table[64] = {
 	0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
 	0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50,
 	0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58,
@@ -26,7 +26,7 @@ CBASE64::~CBASE64(VOID)
 
 }
 
-BOOL CBASE64::Base64Encode(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int &BufferOutSize)
+bool CBASE64::Base64Encode(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int &BufferOutSize)
 {
 	int i = 0;
 
@@ -71,12 +71,12 @@ BOOL CBASE64::Base64Encode(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, 
 		pBufferOut[i * 4 + 3] = '=';
 	}
 
-	BufferOutSize = BufferInSize / 3 * 4 + 4;
+	BufferOutSize = BufferInSize % 3 ? BufferInSize / 3 * 4 + 4 : BufferInSize / 3 * 4;
 
 	return TRUE;
 }
 
-BOOL CBASE64::Base64Decode(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int &BufferOutSize)
+bool CBASE64::Base64Decode(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int &BufferOutSize)
 {
 	int i = 0;
 	int j = 0;
@@ -115,20 +115,32 @@ BOOL CBASE64::Base64Decode(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, 
 	if (j == 1)
 	{
 		pBufferOut[i * 3] = (ReverseBase64Table[pBufferIn[i * 4]] << 2) | (ReverseBase64Table[pBufferIn[i * 4 + 1]] >> 4);
+		if (pBufferOut[i * 3] == 0x00)
+		{
+			j -= 1;
+		}
 	}
 	else if (j == 2)
 	{
 		pBufferOut[i * 3] = (ReverseBase64Table[pBufferIn[i * 4]] << 2) | (ReverseBase64Table[pBufferIn[i * 4 + 1]] >> 4);
 		pBufferOut[i * 3 + 1] = (ReverseBase64Table[pBufferIn[i * 4 + 1]] << 4) | (ReverseBase64Table[pBufferIn[i * 4 + 2]] >> 2);
+		if (pBufferOut[i * 3 + 1] == 0x00)
+		{
+			j -= 1;
+		}
 	}
 	else if (j == 3)
 	{
 		pBufferOut[i * 3] = (ReverseBase64Table[pBufferIn[i * 4]] << 2) | (ReverseBase64Table[pBufferIn[i * 4 + 1]] >> 4);
 		pBufferOut[i * 3 + 1] = (ReverseBase64Table[pBufferIn[i * 4 + 1]] << 4) | (ReverseBase64Table[pBufferIn[i * 4 + 2]] >> 2);
 		pBufferOut[i * 3 + 2] = (ReverseBase64Table[pBufferIn[i * 4 + 2]] << 6) | (ReverseBase64Table[pBufferIn[i * 4 + 3]]);
+		if (pBufferOut[i * 3 + 2] == 0x00)
+		{
+			j -= 1;
+		}
 	}
 
-	BufferOutSize = i * 3 + j - 1;
+	BufferOutSize = i * 3 + j;
 
 	return TRUE;
 }

@@ -9,26 +9,26 @@ public:
 	~CMD5(VOID);
 
 public:
-	inline ULONG HashDigestSize(void)
+	inline unsigned int HashDigestSize(void)
 	{
 		return 16;
 	}
 
 private:
-	ULONG BaseData[4];
-	ULONG CalcData[16];
+	unsigned int BaseData[4];
+	unsigned int CalcData[16];
 
 public:
-	BOOL InitHash(BYTE* pBaseData = NULL);
-	BOOL CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut);
+	bool InitHash(unsigned char* pBaseData = NULL);
+	bool CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut);
 
 public:
-	VOID GetBaseData(BYTE* pBaseDataOut);
+	void GetBaseData(unsigned char* pBaseDataOut);
 
 private:
-	VOID SetBaseData(BYTE* pBaseDataIn);
-	VOID SetCalcData(BYTE* pCalcDataIn);
+	void SetBaseData(unsigned char* pBaseDataIn);
+	void SetCalcData(unsigned char* pCalcDataIn);
 
 private:
-	VOID Md5Calc();
+	void Md5Calc();
 };

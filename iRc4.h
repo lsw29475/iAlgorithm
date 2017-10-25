@@ -9,33 +9,33 @@ public:
 	~CRC4(VOID);
 
 private:
-	BYTE* pRC4Key;
+	unsigned char* pRC4Key;
 	int RC4KeySize;
 
-	BYTE* pRC4StreamKey;
+	unsigned char* pRC4StreamKey;
 	int RC4StreamKeySize;
 
-	BYTE State[256];
-	BYTE Temp[256];
+	unsigned char State[256];
+	unsigned char Temp[256];
 
 public:
-	inline ULONG KeyMaxSize(void)
+	inline unsigned int KeyMaxSize(void)
 	{
 		return 256;
 	}
 
-	inline ULONG KeyMinSize(void)
+	inline unsigned int KeyMinSize(void)
 	{
 		return 1;
 	}
 
 public:
-	BOOL InitKey(BYTE* pKey, int KeySize);
-	BOOL EncryptData(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
-	BOOL DecryptData(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize);
+	bool InitKey(unsigned char* pKey, int KeySize);
+	bool EncryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool DecryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
 
 private:
-	BOOL SetKey(BYTE* pKey, int KeySize);
+	bool SetKey(unsigned char* pKey, int KeySize);
 
 private:
 	VOID InitStateAndTemp();

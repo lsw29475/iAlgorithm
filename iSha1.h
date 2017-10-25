@@ -9,25 +9,25 @@ public:
 	~CSHA1(VOID);
 
 public:
-	inline ULONG HashDigestSize(void)
+	inline unsigned int HashDigestSize(void)
 	{
 		return 20;
 	}
 
 private:
-	ULONG BaseData[5];
-	ULONG CalcData[16];
+	unsigned int BaseData[5];
+	unsigned int CalcData[16];
 
 public:
-	BOOL InitHash(BYTE* pBaseData = NULL);
-	BOOL CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut);
+	bool InitHash(unsigned char* pBaseData = NULL);
+	bool CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut);
 
 public:
-	VOID GetBaseData(BYTE* pBaseDataOut);
+	VOID GetBaseData(unsigned char* pBaseDataOut);
 
 private:
-	VOID SetBaseData(BYTE* pBaseDataIn);
-	VOID SetCalcData(BYTE* pCalcDataIn);
+	VOID SetBaseData(unsigned char* pBaseDataIn);
+	VOID SetCalcData(unsigned char* pCalcDataIn);
 
 private:
 	VOID Sha1Calc();

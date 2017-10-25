@@ -178,7 +178,7 @@ void CAES::RotWord(unsigned char* dwTemp)
 	dwTemp[3] = cTmp;
 }
 
-void CAES::SubBytes(unsigned char* pState)
+void CAES::SubByte(unsigned char* pState)
 {
 	for (int i = 0; i < Nb * 4; i++)
 	{
@@ -315,7 +315,7 @@ void CAES::AddRoundKey(unsigned char* pState, unsigned char* pRoundKey)
 void CAES::AESKeyExpansion()
 {
 	int i = 0;
-	DWORD dwTemp;
+	unsigned int dwTemp;
 
 	memset(RoundKey, 0x00, sizeof(RoundKey));
 	memcpy(RoundKey, key, 32);
@@ -353,13 +353,13 @@ void CAES::AesRoundEncrypt(unsigned char* pBlockIn, unsigned char* pBlockOut)
 
 	for (int ulRound = 1; ulRound <= Nr - 1; ulRound++)
 	{
-		SubBytes((unsigned char*)state);
+		SubByte((unsigned char*)state);
 		ShiftRows((unsigned char*)state);
 		MixColumns((unsigned char*)state);
 		AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + ulRound * 16);
 	}
 
-	SubBytes((unsigned char*)state);
+	SubByte((unsigned char*)state);
 	ShiftRows((unsigned char*)state);
 	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16);
 

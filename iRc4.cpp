@@ -39,7 +39,7 @@ VOID CRC4::InitStateAndTemp()
 VOID CRC4::RangeState()
 {
 	int j = 0;
-	BYTE tmp;
+	unsigned char tmp;
 
 	for (int i = 0; i < 256; ++i)
 	{
@@ -53,7 +53,7 @@ VOID CRC4::RangeState()
 VOID CRC4::KeyStream(int BufferLength)
 {
 	int i = 0, j = 0, t;
-	BYTE tmp;
+	unsigned char tmp;
 
 	if (pRC4StreamKey)
 	{
@@ -62,7 +62,7 @@ VOID CRC4::KeyStream(int BufferLength)
 		RC4StreamKeySize = 0;
 	}
 
-	pRC4StreamKey = new BYTE[BufferLength];
+	pRC4StreamKey = new unsigned char[BufferLength];
 	memset(pRC4StreamKey, 0x00, BufferLength);
 	RC4StreamKeySize = BufferLength;
 
@@ -80,7 +80,7 @@ VOID CRC4::KeyStream(int BufferLength)
 	}
 }
 
-BOOL CRC4::SetKey(BYTE* pKey, int KeySize)
+bool CRC4::SetKey(unsigned char* pKey, int KeySize)
 {
 	if (KeySize < 1 || KeySize > 256)
 	{
@@ -94,7 +94,7 @@ BOOL CRC4::SetKey(BYTE* pKey, int KeySize)
 		KeySize = 0;
 	}
 
-	pRC4Key = new BYTE[KeySize];
+	pRC4Key = new unsigned char[KeySize];
 	memset(pRC4Key, 0x00, KeySize);
 
 	memcpy(pRC4Key, pKey, KeySize);
@@ -103,7 +103,7 @@ BOOL CRC4::SetKey(BYTE* pKey, int KeySize)
 	return TRUE;
 }
 
-BOOL CRC4::InitKey(BYTE* pKey, int KeySize)
+bool CRC4::InitKey(unsigned char* pKey, int KeySize)
 {
 	if (!SetKey(pKey, KeySize))
 	{
@@ -113,7 +113,7 @@ BOOL CRC4::InitKey(BYTE* pKey, int KeySize)
 	return TRUE;
 }
 
-BOOL CRC4::EncryptData(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CRC4::EncryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if ((BufferOutSize != BufferInSize) && (BufferOutSize < BufferInSize))
 	{
@@ -132,7 +132,7 @@ BOOL CRC4::EncryptData(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int 
 	return TRUE;
 }
 
-BOOL CRC4::DecryptData(BYTE* pBufferIn, int BufferInSize, BYTE* pBufferOut, int BufferOutSize)
+bool CRC4::DecryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if ((BufferOutSize != BufferInSize) && (BufferOutSize < BufferInSize))
 	{

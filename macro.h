@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string.h>
 
 #define ROL(datas,bits) ((datas) << (bits) | (datas) >> (32-(bits)))
 

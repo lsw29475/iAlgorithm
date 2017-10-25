@@ -6,54 +6,54 @@
 #define H(x,y,z) (x ^ y ^ z)
 #define I(x,y,z) (y ^ (x | (~z)))
 
-VOID FF(ULONG &a, ULONG b, ULONG c, ULONG d, ULONG Mj, ULONG s, ULONG ti)
+void FF(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Mj, unsigned int s, unsigned int ti)
 {
 	a = b + ROL(a + F(b, c, d) + Mj + ti, s);
 }
 
-VOID GG(ULONG &a, ULONG b, ULONG c, ULONG d, ULONG Mj, ULONG s, ULONG ti)
+void GG(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Mj, unsigned int s, unsigned int ti)
 {
 	a = b + ROL(a + G(b, c, d) + Mj + ti, s);
 }
 
-VOID HH(ULONG &a, ULONG b, ULONG c, ULONG d, ULONG Mj, ULONG s, ULONG ti)
+void HH(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Mj, unsigned int s, unsigned int ti)
 {
 	a = b + ROL(a + H(b, c, d) + Mj + ti, s);
 }
 
-VOID II(ULONG &a, ULONG b, ULONG c, ULONG d, ULONG Mj, ULONG s, ULONG ti)
+void II(unsigned int &a, unsigned int b, unsigned int c, unsigned int d, unsigned int Mj, unsigned int s, unsigned int ti)
 {
 	a = b + ROL(a + I(b, c, d) + Mj + ti, s);
 }
 
-CMD5::CMD5(VOID)
+CMD5::CMD5(void)
 {
 
 }
 
-CMD5::~CMD5(VOID)
+CMD5::~CMD5(void)
 {
 
 }
 
-VOID CMD5::SetBaseData(BYTE* pBaseDataIn)
+void CMD5::SetBaseData(unsigned char* pBaseDataIn)
 {
 	memcpy(BaseData, pBaseDataIn, 16);
 }
 
-VOID CMD5::GetBaseData(BYTE* pBaseDataOut)
+void CMD5::GetBaseData(unsigned char* pBaseDataOut)
 {
 	memcpy(pBaseDataOut, BaseData, 16);
 }
 
-VOID CMD5::SetCalcData(BYTE* pCalcDataIn)
+void CMD5::SetCalcData(unsigned char* pCalcDataIn)
 {
 	memcpy(CalcData, pCalcDataIn, 64);
 }
 
-BOOL CMD5::InitHash(BYTE* pBaseData)
+bool CMD5::InitHash(unsigned char* pBaseData)
 {
-	BYTE InitData[16] = {
+	unsigned char InitData[16] = {
 		0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10
 	};
 
@@ -69,9 +69,9 @@ BOOL CMD5::InitHash(BYTE* pBaseData)
 	return TRUE;
 }
 
-BOOL CMD5::CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut)
+bool CMD5::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut)
 {
-	ULONG DataBuf[16];
+	unsigned int DataBuf[16];
 	int LastSize;
 	int i;
 
@@ -87,29 +87,29 @@ BOOL CMD5::CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut)
 		{
 			memset(DataBuf, 0x00, sizeof(DataBuf));
 			memcpy(DataBuf, pBufferIn + i * 64, sizeof(DataBuf));
-			SetCalcData((BYTE*)DataBuf);
+			SetCalcData((unsigned char*)DataBuf);
 			Md5Calc();
 		}
 		else if (LastSize < 64 && LastSize >= 56)
 		{
 			memset(DataBuf, 0x00, sizeof(DataBuf));
 			memcpy(DataBuf, pBufferIn + i * 64, LastSize);
-			*(BYTE*)((BYTE*)DataBuf + LastSize) = 0x80;
-			SetCalcData((BYTE*)DataBuf);
+			*(unsigned char*)((unsigned char*)DataBuf + LastSize) = 0x80;
+			SetCalcData((unsigned char*)DataBuf);
 			Md5Calc();
 
 			memset(DataBuf, 0x00, sizeof(DataBuf));
-			*(PULONGLONG)((BYTE*)DataBuf + 56) = BufferInSize * 8;
-			SetCalcData((BYTE*)DataBuf);
+			*(unsigned long long*)((unsigned char*)DataBuf + 56) = BufferInSize * 8;
+			SetCalcData((unsigned char*)DataBuf);
 			Md5Calc();
 		}
 		else if (LastSize < 56)
 		{
 			memset(DataBuf, 0x00, sizeof(DataBuf));
 			memcpy(DataBuf, pBufferIn + i * 64, LastSize);
-			*(BYTE*)((BYTE*)DataBuf + LastSize) = 0x80;
-			*(PULONGLONG)((BYTE*)DataBuf + 56) = BufferInSize * 8;
-			SetCalcData((BYTE*)DataBuf);
+			*(unsigned char*)((unsigned char*)DataBuf + LastSize) = 0x80;
+			*(unsigned long long*)((unsigned char*)DataBuf + 56) = BufferInSize * 8;
+			SetCalcData((unsigned char*)DataBuf);
 			Md5Calc();
 		}
 	}
@@ -119,12 +119,12 @@ BOOL CMD5::CalcHash(BYTE* pBufferIn, int BufferInSize, BYTE* pDigestOut)
 	return TRUE;
 }
 
-VOID CMD5::Md5Calc()
+void CMD5::Md5Calc()
 {
-	ULONG a = BaseData[0];
-	ULONG b = BaseData[1];
-	ULONG c = BaseData[2];
-	ULONG d = BaseData[3];
+	unsigned int a = BaseData[0];
+	unsigned int b = BaseData[1];
+	unsigned int c = BaseData[2];
+	unsigned int d = BaseData[3];
 
 	FF(a, b, c, d, CalcData[0], 7, 0xd76aa478);
 	FF(d, a, b, c, CalcData[1], 12, 0xe8c7b756);

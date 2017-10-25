@@ -9,9 +9,9 @@ public:
 	virtual ~CHashBase(VOID);
 
 public:
-	virtual inline ULONG HashDigestSize(VOID) = 0;
+	virtual inline unsigned int HashDigestSize(VOID) = 0;
 
 public:
-	virtual BOOL InitHash(BYTE* pBaseData = NULL) = 0;
-	virtual BOOL CalcHash(BYTE* pBufferIn, int ulBufferInSize, BYTE* pDigestOut) = 0;
+	virtual bool InitHash(unsigned char* pBaseData = NULL) = 0;
+	virtual bool CalcHash(unsigned char* pBufferIn, int ulBufferInSize, unsigned char* pDigestOut) = 0;
 };
