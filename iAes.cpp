@@ -501,74 +501,77 @@ bool CAES::Decrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char
 	return true;
 }
 
-bool CAES::Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
-{
-	if (BufferInSize % 16 != 0)
-	{
-		return false;
-	}
-
-	if (BufferOutSize < BufferInSize)
-	{
-		return false;
-	}
-
-	if (EncryptType != AES_CFB)
-	{
-		return false;
-	}
-
-	for (int i = 0; i < BufferInSize / 16; i++)
-	{
-		AesRoundEncrypt(Iv, Iv);
-		for (int j = 0; j < 16; j++)
-		{
-			Iv[j] ^= *(pBufferIn + i * 16 + j);
-		}
-		memcpy(pBufferOut + i * 16, Iv, 16);
-	}
-
-	return true;
-}
-
-bool CAES::Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
-{
-	if (BufferInSize % 16 != 0)
-	{
-		return false;
-	}
-
-	if (BufferOutSize < BufferInSize)
-	{
-		return false;
-	}
-
-	if (EncryptType != AES_CFB)
-	{
-		return false;
-	}
-
-	for (int i = 0; i < BufferInSize / 16; i++)
-	{
-		AesRoundEncrypt(Iv, Iv);
-		for (int j = 0; j < 16; j++)
-		{
-			Iv[j] ^= *(pBufferIn + i * 16 + j);
-		}
-		memcpy(pBufferOut + i * 16, pBufferIn + i * 16, 16);
-		for (int j = 0; j < 16; j++)
-		{
-			Iv[j] ^= *(pBufferOut + i * 16 + j);
-		}
-		for (int j = 0; j < 16; j++)
-		{
-			*(pBufferOut + i * 16 + j) ^= Iv[j];
-		}
-		for (int j = 0; j < 16; j++)
-		{
-			Iv[j] ^= *(pBufferOut + i * 16 + j);
-		}
-	}
-
-	return true;
-}
+//bool CAES::Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+//{
+//	if (BufferInSize % 16 != 0)
+//	{
+//		return false;
+//	}
+//
+//	if (BufferOutSize < BufferInSize)
+//	{
+//		return false;
+//	}
+//
+//	if (EncryptType != AES_CFB)
+//	{
+//		return false;
+//	}
+//
+//	for (int i = 0; i < BufferInSize / 16; i++)
+//	{
+//		AesRoundEncrypt(Iv, Iv);
+//		for (int j = 0; j < 16; j++)
+//		{
+//			Iv[j] ^= *(pBufferIn + i * 16 + j);
+//		}
+//		memcpy(pBufferOut + i * 16, Iv, 16);
+//	}
+//
+//	return true;
+//}
+//
+//bool CAES::Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+//{
+//	if (BufferInSize % 16 != 0)
+//	{
+//		return false;
+//	}
+//
+//	if (BufferOutSize < BufferInSize)
+//	{
+//		return false;
+//	}
+//
+//	if (EncryptType != AES_CFB)
+//	{
+//		return false;
+//	}
+//
+//	for (int i = 0; i < BufferInSize / 16; i++)
+//	{
+//		AesRoundEncrypt(Iv, Iv);
+//		for (int j = 0; j < 16; j++)
+//		{
+//			Iv[j] ^= *(pBufferIn + i * 16 + j);
+//		}
+//		memcpy(pBufferOut + i * 16, pBufferIn + i * 16, 16);
+//
+//		for (int j = 0; j < 16; j++)
+//		{
+//			Iv[j] ^= *(pBufferOut + i * 16 + j);
+//		}
+//
+//		for (int j = 0; j < 16; j++)
+//		{
+//			*(pBufferOut + i * 16 + j) ^= Iv[j];
+//		}
+//
+//		for (int j = 0; j < 16; j++)
+//		{
+//			Iv[j] ^= *(pBufferOut + i * 16 + j);
+//		}
+//	}
+//
+//	return true;
+//}

@@ -1,12 +1,10 @@
 #pragma once
 
-#include <windows.h>
-
 class _declspec(dllexport) CBASE64
 {
 public:
-	CBASE64(VOID);
-	~CBASE64(VOID);
+	CBASE64(void);
+	~CBASE64(void);
 
 public:
 	bool Base64Encode(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int &BufferOutSize);

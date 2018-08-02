@@ -2,21 +2,21 @@
 
 #include "iHashBase.h"
 
-class _declspec(dllexport) CMD5 : public CHashBase
+class _declspec(dllexport) CSHA512 : public CHashBase
 {
 public:
-	CMD5(void);
-	~CMD5(void);
+	CSHA512(void);
+	~CSHA512(void);
 
 public:
 	inline unsigned int HashDigestSize(void)
 	{
-		return 16;
+		return 64;
 	}
 
 private:
-	unsigned int BaseData[4];
-	unsigned int CalcData[16];
+	unsigned long long BaseData[8];
+	unsigned char CalcData[128];
 
 public:
 	bool InitHash(unsigned char* pBaseData = 0);
@@ -30,5 +30,6 @@ private:
 	void SetCalcData(unsigned char* pCalcDataIn);
 
 private:
-	void Md5Calc();
+	void Sha512Calc();
+
 };

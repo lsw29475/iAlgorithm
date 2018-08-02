@@ -1,5 +1,6 @@
 #include "iMd5.h"
 #include "macro.h"
+#include <memory.h>
 
 #define F(x,y,z) ((x & y) | ((~x) & z))
 #define G(x,y,z) ((x & z) | (y & (~z)))
@@ -66,22 +67,22 @@ bool CMD5::InitHash(unsigned char* pBaseData)
 		SetBaseData(pBaseData);
 	}
 
-	return TRUE;
+	return true;
 }
 
 bool CMD5::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut)
 {
-	unsigned int DataBuf[16];
+	unsigned int DataBuf[16] = { 0x00 };
 	int LastSize;
 	int i;
 
 	if (!pBufferIn || BufferInSize <= 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	LastSize = BufferInSize;
-	for (i = 0; LastSize >= 0; i++, LastSize -= (i * 64))
+	for (i = 0; LastSize >= 0; i++, LastSize -= 64)
 	{
 		if (LastSize >= 64)
 		{
@@ -116,7 +117,7 @@ bool CMD5::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* p
 
 	GetBaseData(pDigestOut);
 
-	return TRUE;
+	return true;
 }
 
 void CMD5::Md5Calc()

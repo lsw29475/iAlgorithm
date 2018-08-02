@@ -1,11 +1,11 @@
 #include "iHashBase.h"
 
-CHashBase::CHashBase(VOID)
+CHashBase::CHashBase(void)
 {
 
 }
 
-CHashBase::~CHashBase(VOID)
+CHashBase::~CHashBase(void)
 {
 
 }

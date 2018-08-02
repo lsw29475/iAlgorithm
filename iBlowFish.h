@@ -1,20 +1,20 @@
 #pragma once
 
-class _declspec(dllexport) CRC4
+class _declspec(dllexport) CBLOWFISH
 {
 public:
-	CRC4(void);
-	~CRC4(void);
+	CBLOWFISH(void);
+	~CBLOWFISH(void);
 
 private:
-	unsigned char* pRC4Key;
-	int RC4KeySize;
+	unsigned char* pBlowFishKey;
+	int BlowFishKeySize;
 
-	unsigned char* pRC4StreamKey;
-	int RC4StreamKeySize;
+	static const unsigned int PBox[18];
+	static const unsigned int SBox[4][256];
 
-	unsigned char State[256];
-	unsigned char Temp[256];
+	unsigned int Key_PBox[18];
+	unsigned int Key_SBox[4][256];
 
 public:
 	inline unsigned int KeyMaxSize(void)
@@ -36,7 +36,7 @@ private:
 	bool SetKey(unsigned char* pKey, int KeySize);
 
 private:
-	void InitStateAndTemp();
-	void RangeState();
-	void KeyStream(int BufferLength);
+	void KeyExpansion();
+	void BlowFishRoundEncrypt(unsigned int* DataL, unsigned int* DataR);
+	void BlowFishRoundDecrypt(unsigned int* DataL, unsigned int* DataR);
 };

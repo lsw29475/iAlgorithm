@@ -6,27 +6,27 @@
 #define H(x,y,z) ((x & y) | (x & z) | (y & z)) 
 #define I(x,y,z) (x ^ y ^ z)
 
-CSHA1::CSHA1(VOID)
+CSHA1::CSHA1(void)
 {
 
 }
 
-CSHA1::~CSHA1(VOID)
+CSHA1::~CSHA1(void)
 {
 
 }
 
-VOID CSHA1::SetBaseData(unsigned char* pBaseDataIn)
+void CSHA1::SetBaseData(unsigned char* pBaseDataIn)
 {
 	memcpy(BaseData, pBaseDataIn, 20);
 }
 
-VOID CSHA1::GetBaseData(unsigned char* pBaseDataOut)
+void CSHA1::GetBaseData(unsigned char* pBaseDataOut)
 {
 	memcpy(pBaseDataOut, BaseData, 20);
 }
 
-VOID CSHA1::SetCalcData(unsigned char* pCalcDataIn)
+void CSHA1::SetCalcData(unsigned char* pCalcDataIn)
 {
 	memcpy(CalcData, pCalcDataIn, 64);
 }
@@ -46,22 +46,22 @@ bool CSHA1::InitHash(unsigned char* pBaseData)
 		SetBaseData(pBaseData);
 	}
 
-	return TRUE;
+	return true;
 }
 
 bool CSHA1::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut)
 {
-	unsigned int DataBuf[16];
+	unsigned int DataBuf[16] = { 0x00 };
 	int LastSize;
 	int i;
 
 	if (!pBufferIn || BufferInSize <= 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	LastSize = BufferInSize;
-	for (i = 0; LastSize >= 0; i++, LastSize -= (i * 64))
+	for (i = 0; LastSize >= 0; i++, LastSize -= 64)
 	{
 		if (LastSize >= 64)
 		{
@@ -96,12 +96,12 @@ bool CSHA1::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* 
 
 	GetBaseData(pDigestOut);
 
-	return TRUE;
+	return true;
 }
 
-VOID CSHA1::Sha1Calc()
+void CSHA1::Sha1Calc()
 {
-	unsigned int W[80];
+	unsigned int W[80] = { 0x00 };
 	int i;
 
 	unsigned int a = BaseData[0];

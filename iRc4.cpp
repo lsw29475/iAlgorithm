@@ -1,7 +1,7 @@
 #include "iRc4.h"
 #include "macro.h"
 
-CRC4::CRC4(VOID)
+CRC4::CRC4(void)
 {
 	pRC4Key = NULL;
 	RC4KeySize = 0;
@@ -10,7 +10,7 @@ CRC4::CRC4(VOID)
 	RC4StreamKeySize = 0;
 }
 
-CRC4::~CRC4(VOID)
+CRC4::~CRC4(void)
 {
 	if (pRC4Key)
 	{
@@ -27,7 +27,7 @@ CRC4::~CRC4(VOID)
 	}
 }
 
-VOID CRC4::InitStateAndTemp()
+void CRC4::InitStateAndTemp()
 {
 	for (int i = 0; i < 256; i++)
 	{
@@ -36,7 +36,7 @@ VOID CRC4::InitStateAndTemp()
 	}
 }
 
-VOID CRC4::RangeState()
+void CRC4::RangeState()
 {
 	int j = 0;
 	unsigned char tmp;
@@ -50,7 +50,7 @@ VOID CRC4::RangeState()
 	}
 }
 
-VOID CRC4::KeyStream(int BufferLength)
+void CRC4::KeyStream(int BufferLength)
 {
 	int i = 0, j = 0, t;
 	unsigned char tmp;
@@ -84,7 +84,7 @@ bool CRC4::SetKey(unsigned char* pKey, int KeySize)
 {
 	if (KeySize < 1 || KeySize > 256)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (pRC4Key)
@@ -100,24 +100,24 @@ bool CRC4::SetKey(unsigned char* pKey, int KeySize)
 	memcpy(pRC4Key, pKey, KeySize);
 	RC4KeySize = KeySize;
 
-	return TRUE;
+	return true;
 }
 
 bool CRC4::InitKey(unsigned char* pKey, int KeySize)
 {
 	if (!SetKey(pKey, KeySize))
 	{
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 bool CRC4::EncryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if ((BufferOutSize != BufferInSize) && (BufferOutSize < BufferInSize))
 	{
-		return FALSE;
+		return false;
 	}
 
 	InitStateAndTemp();
@@ -129,14 +129,14 @@ bool CRC4::EncryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char
 		pBufferOut[i] = pBufferIn[i] ^ pRC4StreamKey[i];
 	}
 
-	return TRUE;
+	return true;
 }
 
 bool CRC4::DecryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
 {
 	if ((BufferOutSize != BufferInSize) && (BufferOutSize < BufferInSize))
 	{
-		return FALSE;
+		return false;
 	}
 
 	InitStateAndTemp();
@@ -148,5 +148,5 @@ bool CRC4::DecryptData(unsigned char* pBufferIn, int BufferInSize, unsigned char
 		pBufferOut[i] = pBufferIn[i] ^ pRC4StreamKey[i];
 	}
 
-	return TRUE;
+	return true;
 }

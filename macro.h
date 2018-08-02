@@ -3,7 +3,17 @@
 #include <stdint.h>
 #include <string.h>
 
+#define SHL(datas,bits) (((datas)&0xFFFFFFFF) << ((uint32_t)bits))
+#define SHR(datas,bits) (((datas)&0xFFFFFFFF) >> ((uint32_t)bits))
+
+#define SHL64(datas,bits) (((datas)&0xFFFFFFFFFFFFFFFF) << ((uint64_t)bits))
+#define SHR64(datas,bits) (((datas)&0xFFFFFFFFFFFFFFFF) >> ((uint64_t)bits))
+
 #define ROL(datas,bits) ((datas) << (bits) | (datas) >> (32-(bits)))
+#define ROL64(datas,bits) ((datas) << (bits) | (datas) >> (64-(bits)))
+
+#define ROR(datas,bits) ((datas) >> (bits) | (datas) << (32-(bits)))
+#define ROR64(datas,bits) ((datas) >> (bits) | (datas) << (64-(bits)))
 
 #define Tranverse16(x) ((((uint16_t)(x) & 0xff00) >> 8) | (((uint16_t)(x) & 0x00ff) << 8))
 #define Tranverse32(x) ((((uint32_t)(x) & 0xff000000) >> 24) | (((uint32_t)(x) & 0x00ff0000) >> 8) | (((uint32_t)(x) & 0x0000ff00) << 8) | (((uint32_t)(x) & 0x000000ff) << 24))

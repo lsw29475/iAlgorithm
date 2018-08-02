@@ -1,4 +1,5 @@
 #include "iBase64.h"
+#include <memory.h>
 
 const unsigned char CBASE64::Base64Table[64] = {
 	0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
@@ -11,7 +12,7 @@ const unsigned char CBASE64::Base64Table[64] = {
 	0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x2b, 0x2f
 };
 
-CBASE64::CBASE64(VOID)
+CBASE64::CBASE64(void)
 {
 	memset(ReverseBase64Table, 0x00, sizeof(ReverseBase64Table));
 
@@ -21,7 +22,7 @@ CBASE64::CBASE64(VOID)
 	}
 }
 
-CBASE64::~CBASE64(VOID)
+CBASE64::~CBASE64(void)
 {
 
 }
@@ -32,18 +33,18 @@ bool CBASE64::Base64Encode(unsigned char* pBufferIn, int BufferInSize, unsigned 
 
 	if (!pBufferIn || !pBufferOut)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferInSize == 0 || BufferOutSize == 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < (BufferInSize + 2) / 3 * 4)
 	{
 		BufferOutSize = BufferInSize / 3 * 4 + 4;
-		return FALSE;
+		return false;
 	}
 
 	memset(pBufferOut, 0x00, BufferOutSize);
@@ -73,7 +74,7 @@ bool CBASE64::Base64Encode(unsigned char* pBufferIn, int BufferInSize, unsigned 
 
 	BufferOutSize = BufferInSize % 3 ? BufferInSize / 3 * 4 + 4 : BufferInSize / 3 * 4;
 
-	return TRUE;
+	return true;
 }
 
 bool CBASE64::Base64Decode(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int &BufferOutSize)
@@ -83,18 +84,18 @@ bool CBASE64::Base64Decode(unsigned char* pBufferIn, int BufferInSize, unsigned 
 
 	if (!pBufferIn || !pBufferOut)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferInSize == 0 || BufferOutSize == 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	if (BufferOutSize < BufferInSize / 4 * 3)
 	{
 		BufferOutSize = BufferInSize / 4 * 3;
-		return FALSE;
+		return false;
 	}
 
 	memset(pBufferOut, 0x00, BufferOutSize);
@@ -142,5 +143,5 @@ bool CBASE64::Base64Decode(unsigned char* pBufferIn, int BufferInSize, unsigned 
 
 	BufferOutSize = i * 3 + j;
 
-	return TRUE;
+	return true;
 }

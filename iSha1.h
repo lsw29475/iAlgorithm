@@ -5,8 +5,8 @@
 class _declspec(dllexport) CSHA1 : public CHashBase
 {
 public:
-	CSHA1(VOID);
-	~CSHA1(VOID);
+	CSHA1(void);
+	~CSHA1(void);
 
 public:
 	inline unsigned int HashDigestSize(void)
@@ -19,16 +19,16 @@ private:
 	unsigned int CalcData[16];
 
 public:
-	bool InitHash(unsigned char* pBaseData = NULL);
+	bool InitHash(unsigned char* pBaseData = 0);
 	bool CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* pDigestOut);
 
 public:
-	VOID GetBaseData(unsigned char* pBaseDataOut);
+	void GetBaseData(unsigned char* pBaseDataOut);
 
 private:
-	VOID SetBaseData(unsigned char* pBaseDataIn);
-	VOID SetCalcData(unsigned char* pCalcDataIn);
+	void SetBaseData(unsigned char* pBaseDataIn);
+	void SetCalcData(unsigned char* pCalcDataIn);
 
 private:
-	VOID Sha1Calc();
+	void Sha1Calc();
 };
