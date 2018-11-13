@@ -94,6 +94,11 @@ bool CSHA1::CalcHash(unsigned char* pBufferIn, int BufferInSize, unsigned char* 
 		}
 	}
 
+	for (i = 0; i < 5; i++)
+	{
+		BaseData[i] = Tranverse32(BaseData[i]);
+	}
+
 	GetBaseData(pDigestOut);
 
 	return true;
@@ -153,10 +158,5 @@ void CSHA1::Sha1Calc()
 	BaseData[2] += c;
 	BaseData[3] += d;
 	BaseData[4] += e;
-
-	for (i = 0; i < 5; i++)
-	{
-		BaseData[i] = Tranverse32(BaseData[i]);
-	}
 }
 
