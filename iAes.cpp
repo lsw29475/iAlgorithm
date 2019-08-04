@@ -94,6 +94,7 @@ bool CAES::SetAESKey(unsigned char* pKey, int KeySize)
 		return false;
 	}
 
+    memset(key, 0x00, sizeof(key));
 	memcpy(key, pKey, KeySize);
 
 	return true;
