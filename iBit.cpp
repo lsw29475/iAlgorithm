@@ -117,6 +117,7 @@ void iBit::iCat(std::string In, int StartPos, int Size)
 
 	m_Data += pTemp;
 	m_Size = m_Data.size();
+	delete[] pTemp;
 }
 
 void iBit::iLeftShift(int Pos)
