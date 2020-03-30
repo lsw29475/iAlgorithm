@@ -33,8 +33,7 @@ const unsigned char CAES::SBox[256] = {
 	0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94,
 	0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
 	0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68,
-	0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
-};
+	0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16};
 
 const unsigned char CAES::InvSBox[256] = {
 	0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38,
@@ -68,39 +67,41 @@ const unsigned char CAES::InvSBox[256] = {
 	0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0,
 	0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
 	0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26,
-	0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
-};
+	0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d};
 
 const unsigned long CAES::Rcon[11] = {
-	0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
-};
+	0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
+
+const unsigned long long CAES::LastBox[16] = {
+	0x0000, 0x1c20, 0x3840, 0x2460,
+	0x7080, 0x6ca0, 0x48c0, 0x54e0,
+	0xe100, 0xfd20, 0xd940, 0xc560,
+	0x9180, 0x8da0, 0xa9c0, 0xb5e0};
 
 const int CAES::Nb = 4;
 
 CAES::CAES(void)
 {
-
 }
 
 CAES::~CAES(void)
 {
-
 }
 
-bool CAES::SetAESKey(unsigned char* pKey, int KeySize)
+bool CAES::SetAESKey(unsigned char *pKey, int KeySize)
 {
 	if (KeySize != 16 && KeySize != 24 && KeySize != 32)
 	{
 		return false;
 	}
 
-    memset(key, 0x00, sizeof(key));
+	memset(key, 0x00, sizeof(key));
 	memcpy(key, pKey, KeySize);
 
 	return true;
 }
 
-bool CAES::AesInit(unsigned char* pKey, int KeySize, int EncryptMode)
+bool CAES::AesInit(unsigned char *pKey, int KeySize, unsigned char *pGCMNonce, int NonceSizeIn, int EncryptMode)
 {
 	if (!SetAESKey(pKey, KeySize))
 	{
@@ -114,7 +115,7 @@ bool CAES::AesInit(unsigned char* pKey, int KeySize, int EncryptMode)
 		Nr = 10;
 		AesType = AES_128_TYPE;
 		break;
-		
+
 	case AES_192_TYPE:
 		Nk = 6;
 		Nr = 12;
@@ -145,14 +146,31 @@ bool CAES::AesInit(unsigned char* pKey, int KeySize, int EncryptMode)
 		EncryptType = AES_CFB;
 		break;
 
+	case AES_GCM:
+		EncryptType = AES_GCM;
+		break;
+
+	case AES_XTS:
+		EncryptType = AES_XTS;
+		break;
+
 	default:
 		return false;
+	}
+
+	if (EncryptType == AES_GCM)
+	{
+		NonceSize = NonceSizeIn;
+		memset(BaseEncryptData, 0x00, sizeof(BaseEncryptData));
+		memset(WorkingData, 0x00, sizeof(WorkingData));
+		memset(GCMNonce, 0x00, sizeof(GCMNonce));
+		memcpy(GCMNonce, pGCMNonce, NonceSize);
 	}
 
 	return true;
 }
 
-void CAES::AesSetIv(unsigned char* pSetIv)
+void CAES::AesSetIv(unsigned char *pSetIv)
 {
 	memcpy(Iv, pSetIv, 16);
 }
@@ -162,7 +180,7 @@ unsigned char CAES::xtime(unsigned char cByte)
 	return cByte >= 0x80 ? (cByte << 1) ^ 0x1b : cByte << 1;
 }
 
-void CAES::SubWord(unsigned char* dwTemp)
+void CAES::SubWord(unsigned char *dwTemp)
 {
 	dwTemp[0] = SBox[dwTemp[0]];
 	dwTemp[1] = SBox[dwTemp[1]];
@@ -170,7 +188,7 @@ void CAES::SubWord(unsigned char* dwTemp)
 	dwTemp[3] = SBox[dwTemp[3]];
 }
 
-void CAES::RotWord(unsigned char* dwTemp)
+void CAES::RotWord(unsigned char *dwTemp)
 {
 	unsigned char cTmp = dwTemp[0];
 	dwTemp[0] = dwTemp[1];
@@ -179,7 +197,7 @@ void CAES::RotWord(unsigned char* dwTemp)
 	dwTemp[3] = cTmp;
 }
 
-void CAES::SubByte(unsigned char* pState)
+void CAES::SubByte(unsigned char *pState)
 {
 	for (int i = 0; i < Nb * 4; i++)
 	{
@@ -187,7 +205,7 @@ void CAES::SubByte(unsigned char* pState)
 	}
 }
 
-void CAES::InvSubBytes(unsigned char* pState)
+void CAES::InvSubBytes(unsigned char *pState)
 {
 	for (int i = 0; i < Nb * 4; i++)
 	{
@@ -195,10 +213,10 @@ void CAES::InvSubBytes(unsigned char* pState)
 	}
 }
 
-void CAES::MixColumns(unsigned char* State)
+void CAES::MixColumns(unsigned char *State)
 {
-	unsigned char temp[4][4] = { 0x00 };
-	unsigned char out[4][4] = { 0x00 };
+	unsigned char temp[4][4] = {0x00};
+	unsigned char out[4][4] = {0x00};
 
 	memcpy(temp, State, 16);
 
@@ -213,10 +231,10 @@ void CAES::MixColumns(unsigned char* State)
 	memcpy(State, out, 16);
 }
 
-void CAES::InvMixColumns(unsigned char* State)
+void CAES::InvMixColumns(unsigned char *State)
 {
-	unsigned char temp[4][4] = { 0x00 };
-	unsigned char out[4][4] = { 0x00 };
+	unsigned char temp[4][4] = {0x00};
+	unsigned char out[4][4] = {0x00};
 	unsigned char tmp;
 
 	memcpy(temp, State, 16);
@@ -233,7 +251,7 @@ void CAES::InvMixColumns(unsigned char* State)
 	memcpy(State, out, 16);
 }
 
-void CAES::ShiftRows(unsigned char* pState)
+void CAES::ShiftRows(unsigned char *pState)
 {
 	unsigned char Temp;
 
@@ -241,35 +259,35 @@ void CAES::ShiftRows(unsigned char* pState)
 	{
 		if (i == 1)
 		{
-			Temp = *(unsigned char*)(pState + i);
-			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4);
-			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i + 4 * 2);
-			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i + 4 * 3);
-			*(unsigned char*)(pState + i + 4 * 3) = Temp;
+			Temp = *(unsigned char *)(pState + i);
+			*(unsigned char *)(pState + i) = *(unsigned char *)(pState + i + 4);
+			*(unsigned char *)(pState + i + 4) = *(unsigned char *)(pState + i + 4 * 2);
+			*(unsigned char *)(pState + i + 4 * 2) = *(unsigned char *)(pState + i + 4 * 3);
+			*(unsigned char *)(pState + i + 4 * 3) = Temp;
 		}
 
 		if (i == 2)
 		{
-			Temp = *(unsigned char*)(pState + i);
-			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4 * 2);
-			*(unsigned char*)(pState + i + 4 * 2) = Temp;
-			Temp = *(unsigned char*)(pState + i + 4);
-			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i + 4 * 3);
-			*(unsigned char*)(pState + i + 4 * 3) = Temp;
+			Temp = *(unsigned char *)(pState + i);
+			*(unsigned char *)(pState + i) = *(unsigned char *)(pState + i + 4 * 2);
+			*(unsigned char *)(pState + i + 4 * 2) = Temp;
+			Temp = *(unsigned char *)(pState + i + 4);
+			*(unsigned char *)(pState + i + 4) = *(unsigned char *)(pState + i + 4 * 3);
+			*(unsigned char *)(pState + i + 4 * 3) = Temp;
 		}
 
 		if (i == 3)
 		{
-			Temp = *(unsigned char*)(pState + i);
-			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4 * 3);
-			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i + 4 * 2);
-			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i + 4);
-			*(unsigned char*)(pState + i + 4) = Temp;
+			Temp = *(unsigned char *)(pState + i);
+			*(unsigned char *)(pState + i) = *(unsigned char *)(pState + i + 4 * 3);
+			*(unsigned char *)(pState + i + 4 * 3) = *(unsigned char *)(pState + i + 4 * 2);
+			*(unsigned char *)(pState + i + 4 * 2) = *(unsigned char *)(pState + i + 4);
+			*(unsigned char *)(pState + i + 4) = Temp;
 		}
 	}
 }
 
-void CAES::InvShiftRows(unsigned char* pState)
+void CAES::InvShiftRows(unsigned char *pState)
 {
 	unsigned char Temp;
 
@@ -277,35 +295,35 @@ void CAES::InvShiftRows(unsigned char* pState)
 	{
 		if (i == 1)
 		{
-			Temp = *(unsigned char*)(pState + i + 4 * 3);
-			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i + 4 * 2);
-			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i + 4);
-			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i);
-			*(unsigned char*)(pState + i) = Temp;
+			Temp = *(unsigned char *)(pState + i + 4 * 3);
+			*(unsigned char *)(pState + i + 4 * 3) = *(unsigned char *)(pState + i + 4 * 2);
+			*(unsigned char *)(pState + i + 4 * 2) = *(unsigned char *)(pState + i + 4);
+			*(unsigned char *)(pState + i + 4) = *(unsigned char *)(pState + i);
+			*(unsigned char *)(pState + i) = Temp;
 		}
 
 		if (i == 2)
 		{
-			Temp = *(unsigned char*)(pState + i + 4 * 3);
-			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i + 4);
-			*(unsigned char*)(pState + i + 4) = Temp;
-			Temp = *(unsigned char*)(pState + i + 4 * 2);
-			*(unsigned char*)(pState + i + 4 * 2) = *(unsigned char*)(pState + i);
-			*(unsigned char*)(pState + i) = Temp;
+			Temp = *(unsigned char *)(pState + i + 4 * 3);
+			*(unsigned char *)(pState + i + 4 * 3) = *(unsigned char *)(pState + i + 4);
+			*(unsigned char *)(pState + i + 4) = Temp;
+			Temp = *(unsigned char *)(pState + i + 4 * 2);
+			*(unsigned char *)(pState + i + 4 * 2) = *(unsigned char *)(pState + i);
+			*(unsigned char *)(pState + i) = Temp;
 		}
 
 		if (i == 3)
 		{
-			Temp = *(unsigned char*)(pState + i + 4 * 3);
-			*(unsigned char*)(pState + i + 4 * 3) = *(unsigned char*)(pState + i);
-			*(unsigned char*)(pState + i) = *(unsigned char*)(pState + i + 4);
-			*(unsigned char*)(pState + i + 4) = *(unsigned char*)(pState + i + 4 * 2);
-			*(unsigned char*)(pState + i + 4 * 2) = Temp;
+			Temp = *(unsigned char *)(pState + i + 4 * 3);
+			*(unsigned char *)(pState + i + 4 * 3) = *(unsigned char *)(pState + i);
+			*(unsigned char *)(pState + i) = *(unsigned char *)(pState + i + 4);
+			*(unsigned char *)(pState + i + 4) = *(unsigned char *)(pState + i + 4 * 2);
+			*(unsigned char *)(pState + i + 4 * 2) = Temp;
 		}
 	}
 }
 
-void CAES::AddRoundKey(unsigned char* pState, unsigned char* pRoundKey)
+void CAES::AddRoundKey(unsigned char *pState, unsigned char *pRoundKey)
 {
 	for (unsigned long i = 0; i < 16; i++)
 	{
@@ -328,13 +346,13 @@ void CAES::AESKeyExpansion()
 		dwTemp = RoundKey[i - 1];
 		if (i % Nk == 0)
 		{
-			RotWord((unsigned char*)&dwTemp);
-			SubWord((unsigned char*)&dwTemp);
+			RotWord((unsigned char *)&dwTemp);
+			SubWord((unsigned char *)&dwTemp);
 			dwTemp ^= Rcon[i / Nk];
 		}
 		else if ((Nk > 6) && (i % Nk == 4))
 		{
-			SubWord((unsigned char*)&dwTemp);
+			SubWord((unsigned char *)&dwTemp);
 		}
 
 		RoundKey[i] = RoundKey[i - Nk] ^ dwTemp;
@@ -342,57 +360,57 @@ void CAES::AESKeyExpansion()
 	}
 }
 
-void CAES::AesRoundEncrypt(unsigned char* pBlockIn, unsigned char* pBlockOut)
+void CAES::AesRoundEncrypt(unsigned char *pBlockIn, unsigned char *pBlockOut)
 {
-	unsigned char state[4][4] = { 0x00 };
+	unsigned char state[4][4] = {0x00};
 
 	memcpy(state, pBlockIn, 16);
 
 	AESKeyExpansion();
 
-	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey);
+	AddRoundKey((unsigned char *)state, (unsigned char *)RoundKey);
 
 	for (int ulRound = 1; ulRound <= Nr - 1; ulRound++)
 	{
-		SubByte((unsigned char*)state);
-		ShiftRows((unsigned char*)state);
-		MixColumns((unsigned char*)state);
-		AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + ulRound * 16);
+		SubByte((unsigned char *)state);
+		ShiftRows((unsigned char *)state);
+		MixColumns((unsigned char *)state);
+		AddRoundKey((unsigned char *)state, (unsigned char *)RoundKey + ulRound * 16);
 	}
 
-	SubByte((unsigned char*)state);
-	ShiftRows((unsigned char*)state);
-	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16);
+	SubByte((unsigned char *)state);
+	ShiftRows((unsigned char *)state);
+	AddRoundKey((unsigned char *)state, (unsigned char *)RoundKey + Nr * 16);
 
 	memcpy(pBlockOut, state, 16);
 }
 
-void CAES::AesRoundDecrypt(unsigned char* pBlockIn, unsigned char* pBlockOut)
+void CAES::AesRoundDecrypt(unsigned char *pBlockIn, unsigned char *pBlockOut)
 {
-	unsigned char state[4][4] = { 0x00 };
+	unsigned char state[4][4] = {0x00};
 
 	memcpy(state, pBlockIn, 16);
 
 	AESKeyExpansion();
 
-	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16);
+	AddRoundKey((unsigned char *)state, (unsigned char *)RoundKey + Nr * 16);
 
 	for (int ulRound = 1; ulRound <= Nr - 1; ulRound++)
 	{
-		InvShiftRows((unsigned char*)state);
-		InvSubBytes((unsigned char*)state);
-		AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey + Nr * 16 - ulRound * 16);
-		InvMixColumns((unsigned char*)state);
+		InvShiftRows((unsigned char *)state);
+		InvSubBytes((unsigned char *)state);
+		AddRoundKey((unsigned char *)state, (unsigned char *)RoundKey + Nr * 16 - ulRound * 16);
+		InvMixColumns((unsigned char *)state);
 	}
 
-	InvShiftRows((unsigned char*)state);
-	InvSubBytes((unsigned char*)state);
-	AddRoundKey((unsigned char*)state, (unsigned char*)RoundKey);
+	InvShiftRows((unsigned char *)state);
+	InvSubBytes((unsigned char *)state);
+	AddRoundKey((unsigned char *)state, (unsigned char *)RoundKey);
 
 	memcpy(pBlockOut, state, 16);
 }
 
-bool CAES::Encrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+bool CAES::Encrypt_ECB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
@@ -417,7 +435,7 @@ bool CAES::Encrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char
 	return true;
 }
 
-bool CAES::Decrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+bool CAES::Decrypt_ECB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
@@ -442,7 +460,7 @@ bool CAES::Decrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char
 	return true;
 }
 
-bool CAES::Encrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+bool CAES::Encrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
@@ -472,7 +490,7 @@ bool CAES::Encrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char
 	return true;
 }
 
-bool CAES::Decrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+bool CAES::Decrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
 {
 	if (BufferInSize % 16 != 0)
 	{
@@ -576,3 +594,342 @@ bool CAES::Decrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char
 //
 //	return true;
 //}
+
+void CAES::AESGCMGenerateTable()
+{
+	unsigned char h[16];
+	unsigned long long high, low;
+	unsigned long temp;
+
+	memset(h, 0x00, sizeof(h));
+	memset(HTableHigh, 0x00, sizeof(HTableHigh));
+	memset(HTableLow, 0x00, sizeof(HTableLow));
+
+	AesRoundEncrypt(h, h);
+
+	GET_UINT32_BE(high, h, 0);
+	GET_UINT32_BE(low, h, 4);
+	HTableHigh[8] = (uint64_t)high << 32 | low;
+
+	GET_UINT32_BE(high, h, 8);
+	GET_UINT32_BE(low, h, 12);
+	HTableLow[8] = (uint64_t)high << 32 | low;
+
+	HTableHigh[0] = 0;
+	HTableLow[0] = 0;
+	high = HTableHigh[8];
+	low = HTableLow[8];
+
+	for (int i = 4; i > 0; i >>= 1)
+	{
+		temp = (low & 1) * 0xe1000000U;
+		low = (high << 63) | (low >> 1);
+		high = (high >> 1) ^ ((uint64_t)temp << 32);
+
+		HTableLow[i] = low;
+		HTableHigh[i] = high;
+	}
+
+	for (int i = 2; i <= 8; i *= 2)
+	{
+		low = HTableLow[i];
+		high = HTableHigh[i];
+		for (int j = 1; j < i; j++)
+		{
+			HTableHigh[i + j] = high ^ HTableHigh[j];
+			HTableLow[i + j] = low ^ HTableLow[j];
+		}
+	}
+}
+
+void CAES::AESGCMMult(unsigned char *pIn, unsigned char *pOut)
+{
+	unsigned char low, high, rem;
+	uint64_t zh, zl;
+
+	low = pIn[15] & 0xf;
+
+	zh = HTableHigh[low];
+	zl = HTableLow[low];
+
+	for (int i = 15; i >= 0; i--)
+	{
+		low = pIn[i] & 0xf;
+		high = pIn[i] >> 4;
+
+		if (i != 15)
+		{
+			rem = (unsigned char)zl & 0xf;
+			zl = (zh << 60) | (zl >> 4);
+			zh = (zh >> 4);
+			zh ^= (uint64_t)LastBox[rem] << 48;
+			zh ^= HTableHigh[low];
+			zl ^= HTableLow[low];
+		}
+
+		rem = (unsigned char)zl & 0xf;
+		zl = (zh << 60) | (zl >> 4);
+		zh = (zh >> 4);
+		zh ^= (uint64_t)LastBox[rem] << 48;
+		zh ^= HTableHigh[high];
+		zl ^= HTableLow[high];
+	}
+
+	PUT_UINT32_BE(zh >> 32, pOut, 0);
+	PUT_UINT32_BE(zh, pOut, 4);
+	PUT_UINT32_BE(zl >> 32, pOut, 8);
+	PUT_UINT32_BE(zl, pOut, 12);
+}
+
+bool CAES::AESGCMHandleNonce(unsigned char *pAdditionData, int AdditionDataSize)
+{
+	unsigned char tempBuf[16];
+	unsigned char *pTemp = NULL;
+	int TempLength;
+
+	if (NonceSize > 16 || AdditionDataSize > 16)
+	{
+		return false;
+	}
+
+	if (NonceSize == 12)
+	{
+		GCMNonce[15] = 1;
+	}
+	else
+	{
+		memset(tempBuf, 0x00, sizeof(tempBuf));
+		PUT_UINT32_BE(NonceSize * 8, tempBuf, 12);
+
+		pTemp = new unsigned char[NonceSize];
+		memcpy(pTemp, GCMNonce, NonceSize);
+		while (NonceSize > 0)
+		{
+			TempLength = (NonceSize < 16) ? NonceSize : 16;
+
+			for (int i = 0; i < TempLength; i++)
+			{
+				GCMNonce[i] ^= pTemp[i];
+			}
+
+			AESGCMMult(GCMNonce, GCMNonce);
+
+			NonceSize -= TempLength;
+			pTemp += TempLength;
+		}
+
+		for (int i = 0; i < 16; i++)
+		{
+			GCMNonce[i] ^= tempBuf[i];
+		}
+
+		AESGCMMult(GCMNonce, GCMNonce);
+	}
+
+	delete[] pTemp;
+	pTemp = NULL;
+	AesRoundEncrypt(GCMNonce, BaseEncryptData);
+
+	pTemp = pAdditionData;
+	while (AdditionDataSize > 0)
+	{
+		TempLength = (AdditionDataSize < 16) ? AdditionDataSize : 16;
+
+		for (int i = 0; i < TempLength; i++)
+		{
+			WorkingData[i] ^= pTemp[i];
+		}
+
+		AESGCMMult(WorkingData, WorkingData);
+		AdditionDataSize -= TempLength;
+		pTemp += TempLength;
+	}
+
+	return true;
+}
+
+bool CAES::Encrypt_GCM(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, unsigned char *pAdditionData, int AdditionDataSize, unsigned char *pTag, int TagSize)
+{
+	int TempLength;
+	unsigned char TempBuf[16];
+	unsigned long long OrigSize;
+	unsigned long long OrgiAdditionSize;
+
+	if (BufferOutSize != BufferInSize)
+	{
+		return false;
+	}
+
+	if (EncryptType != AES_GCM)
+	{
+		return false;
+	}
+
+	if (TagSize > 16 || TagSize < 4)
+	{
+		return false;
+	}
+
+	AESKeyExpansion();
+	AESGCMGenerateTable();
+	if (!AESGCMHandleNonce(pAdditionData, AdditionDataSize))
+	{
+		return false;
+	}
+
+	while (BufferInSize > 0)
+	{
+		TempLength = (BufferInSize < 16) ? BufferInSize : 16;
+
+		for (int i = 16; i > 12; i--)
+		{
+			if (++GCMNonce[i - 1] != 0)
+			{
+				break;
+			}
+		}
+
+		AesRoundEncrypt(GCMNonce, TempBuf);
+
+		for (int i = 0; i < TempLength; i++)
+		{
+			pBufferOut[i] = TempBuf[i] ^ pBufferIn[i];
+			WorkingData[i] ^= pBufferOut[i];
+		}
+
+		AESGCMMult(WorkingData, WorkingData);
+		BufferInSize -= TempLength;
+		pBufferIn += TempLength;
+		pBufferOut += TempLength;
+	}
+
+	if (TagSize != 0)
+	{
+		memcpy(pTag, BaseEncryptData, TagSize);
+	}
+
+	OrigSize = BufferOutSize * 8;
+	OrgiAdditionSize = AdditionDataSize * 8;
+
+	if (OrigSize || OrgiAdditionSize)
+	{
+		memset(TempBuf, 0x00, 16);
+
+		PUT_UINT32_BE((OrgiAdditionSize >> 32), TempBuf, 0);
+		PUT_UINT32_BE((OrgiAdditionSize), TempBuf, 4);
+		PUT_UINT32_BE((OrigSize >> 32), TempBuf, 8);
+		PUT_UINT32_BE((OrigSize), TempBuf, 12);
+
+		for (int i = 0; i < 16; i++)
+		{
+			WorkingData[i] ^= TempBuf[i];
+		}
+
+		AESGCMMult(WorkingData, WorkingData);
+
+		for (int i = 0; i < TagSize; i++)
+		{
+			pTag[i] ^= WorkingData[i];
+		}
+	}
+
+	return true;
+}
+
+bool CAES::Decrypt_GCM(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, unsigned char *pAdditionData, int AdditionDataSize, unsigned char *pTag, int TagSize)
+{
+	int TempLength;
+	unsigned char TempBuf[16];
+	unsigned long long OrigSize;
+	unsigned long long OrgiAdditionSize;
+
+	if (BufferOutSize != BufferInSize)
+	{
+		return false;
+	}
+
+	if (EncryptType != AES_GCM)
+	{
+		return false;
+	}
+
+	if (TagSize > 16 || TagSize < 4)
+	{
+		return false;
+	}
+
+	AESKeyExpansion();
+	AESGCMGenerateTable();
+	if (!AESGCMHandleNonce(pAdditionData, AdditionDataSize))
+	{
+		return false;
+	}
+
+	while (BufferInSize > 0)
+	{
+		TempLength = (BufferInSize < 16) ? BufferInSize : 16;
+
+		for (int i = 16; i > 12; i--)
+		{
+			if (++GCMNonce[i - 1] != 0)
+			{
+				break;
+			}
+		}
+
+		AesRoundEncrypt(GCMNonce, TempBuf);
+
+		for (int i = 0; i < TempLength; i++)
+		{
+			WorkingData[i] ^= pBufferIn[i];
+			pBufferOut[i] = TempBuf[i] ^ pBufferIn[i];
+		}
+
+		AESGCMMult(WorkingData, WorkingData);
+		BufferInSize -= TempLength;
+		pBufferIn += TempLength;
+		pBufferOut += TempLength;
+	}
+
+	if (TagSize != 0)
+	{
+		memcpy(pTag, BaseEncryptData, TagSize);
+	}
+
+	OrigSize = BufferOutSize * 8;
+	OrgiAdditionSize = AdditionDataSize * 8;
+
+	if (OrigSize || OrgiAdditionSize)
+	{
+		memset(TempBuf, 0x00, 16);
+
+		PUT_UINT32_BE((OrgiAdditionSize >> 32), TempBuf, 0);
+		PUT_UINT32_BE((OrgiAdditionSize), TempBuf, 4);
+		PUT_UINT32_BE((OrigSize >> 32), TempBuf, 8);
+		PUT_UINT32_BE((OrigSize), TempBuf, 12);
+
+		for (int i = 0; i < 16; i++)
+		{
+			WorkingData[i] ^= TempBuf[i];
+		}
+
+		AESGCMMult(WorkingData, WorkingData);
+
+		for (int i = 0; i < TagSize; i++)
+		{
+			pTag[i] ^= WorkingData[i];
+		}
+	}
+
+	return true;
+}
+
+bool CAES::Encrypt_XTS(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
+{
+	return true;
+}
+
+bool CAES::Decrypt_XTS(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
+{
+	return true;
+}

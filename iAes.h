@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 class _declspec(dllexport) CAES
 {
@@ -19,6 +19,8 @@ public:
 		AES_ECB = 1,
 		AES_CBC = 2,
 		AES_CFB = 3,
+		AES_GCM = 4,
+		AES_XTS = 5,
 	};
 
 private:
@@ -28,6 +30,14 @@ private:
 	unsigned long key[8];
 	unsigned char Iv[16];
 	unsigned long RoundKey[60];
+
+	int NonceSize;
+	unsigned char GCMNonce[16];
+	unsigned long long HTableHigh[16];
+	unsigned long long HTableLow[16];
+	unsigned char BaseEncryptData[16];
+	unsigned char WorkingData[16];
+
 	int AesType;
 	int EncryptType;
 
@@ -35,44 +45,55 @@ private:
 	static const unsigned long Rcon[11];
 	static const unsigned char SBox[256];
 	static const unsigned char InvSBox[256];
+	static const unsigned long long LastBox[16];
 
 public:
-	void AesSetIv(unsigned char* pSetIv);
+	void AesSetIv(unsigned char *pSetIv);
 
-	bool AesInit(unsigned char* pKey, int KeySize, int EncryptMode);
+	bool AesInit(unsigned char *pKey, int KeySize, unsigned char *pGCMNonce, int NonceSize, int EncryptMode);
 
-	bool Encrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
-	bool Decrypt_ECB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool Encrypt_ECB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
+	bool Decrypt_ECB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 
-	bool Encrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
-	bool Decrypt_CBC(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool Encrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
+	bool Decrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 
 	//bool Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
 	//bool Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
 
-private:
-	bool SetAESKey(unsigned char* pKey, int KeySize);
-	void AesRoundEncrypt(unsigned char* pBlockIn, unsigned char* pBlockOut);
-	void AesRoundDecrypt(unsigned char* pBlockIn, unsigned char* pBlockOut);
+	bool Encrypt_GCM(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, unsigned char *pAdditionData, int AdditionDataSize, unsigned char* pTag, int TagSize);
+	bool Decrypt_GCM(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, unsigned char *pAdditionData, int AdditionDataSize, unsigned char* pTag, int TagSize);
+
+	bool Encrypt_XTS(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
+	bool Decrypt_XTS(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 
 private:
-	//¶ÔÃÜÔ¿½øĞĞÍØÕ¹£¬ÍØÕ¹ÎªÂÖÃÜÔ¿
+	bool SetAESKey(unsigned char *pKey, int KeySize);
+	void AesRoundEncrypt(unsigned char *pBlockIn, unsigned char *pBlockOut);
+	void AesRoundDecrypt(unsigned char *pBlockIn, unsigned char *pBlockOut);
+
+private:
+	//å¯¹å¯†é’¥è¿›è¡Œæ‹“å±•ï¼Œæ‹“å±•ä¸ºè½®å¯†é’¥
 	void AESKeyExpansion();
-	//½«×´Ì¬ÔªËØÓëÂÖÃÜÔ¿½øĞĞ¼òµ¥Òà»òÔËËã
-	void AddRoundKey(unsigned char* pState, unsigned char* pRoundKey);
-	//Subunsigned chars  ÒÔ×´Ì¬Êı×éÖĞÃ¿¸ö×Ö½ÚÔªËØµÄ¸ß4Î»×÷ĞĞ±ê£¬µÍ4Î»×÷ÁĞ±ê£¬È¡¶ÔÓ¦SBoxÔªËØ
-	void SubByte(unsigned char* pState);
-	//¶Ô×´Ì¬Êı×é½øĞĞÎ»ÒÆ
-	void ShiftRows(unsigned char* pState);
-	//¶Ô×´Ì¬Êı×é½øĞĞ¾ØÕóÏà³ËÔËËã
-	void MixColumns(unsigned char* State);
+	//å°†çŠ¶æ€å…ƒç´ ä¸è½®å¯†é’¥è¿›è¡Œç®€å•äº¦æˆ–è¿ç®—
+	void AddRoundKey(unsigned char *pState, unsigned char *pRoundKey);
+	//Subunsigned chars  ä»¥çŠ¶æ€æ•°ç»„ä¸­æ¯ä¸ªå­—èŠ‚å…ƒç´ çš„é«˜4ä½ä½œè¡Œæ ‡ï¼Œä½4ä½ä½œåˆ—æ ‡ï¼Œå–å¯¹åº”SBoxå…ƒç´ 
+	void SubByte(unsigned char *pState);
+	//å¯¹çŠ¶æ€æ•°ç»„è¿›è¡Œä½ç§»
+	void ShiftRows(unsigned char *pState);
+	//å¯¹çŠ¶æ€æ•°ç»„è¿›è¡ŒçŸ©é˜µç›¸ä¹˜è¿ç®—
+	void MixColumns(unsigned char *State);
 
-	void InvSubBytes(unsigned char* pState);
-	void InvShiftRows(unsigned char* pState);
-	void InvMixColumns(unsigned char* pState);
+	void InvSubBytes(unsigned char *pState);
+	void InvShiftRows(unsigned char *pState);
+	void InvMixColumns(unsigned char *pState);
+
+	void AESGCMGenerateTable();
+	bool AESGCMHandleNonce(unsigned char *pAdditionData, int AdditionDataSize);
+	void AESGCMMult(unsigned char *pIn, unsigned char *pOut);
 
 private:
 	unsigned char xtime(unsigned char cByte);
-	void SubWord(unsigned char* dwTemp);
-	void RotWord(unsigned char* dwTemp);
+	void SubWord(unsigned char *dwTemp);
+	void RotWord(unsigned char *dwTemp);
 };
