@@ -520,80 +520,126 @@ bool CAES::Decrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char
 	return true;
 }
 
-//bool CAES::Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
-//{
-//	if (BufferInSize % 16 != 0)
-//	{
-//		return false;
-//	}
-//
-//	if (BufferOutSize < BufferInSize)
-//	{
-//		return false;
-//	}
-//
-//	if (EncryptType != AES_CFB)
-//	{
-//		return false;
-//	}
-//
-//	for (int i = 0; i < BufferInSize / 16; i++)
-//	{
-//		AesRoundEncrypt(Iv, Iv);
-//		for (int j = 0; j < 16; j++)
-//		{
-//			Iv[j] ^= *(pBufferIn + i * 16 + j);
-//		}
-//		memcpy(pBufferOut + i * 16, Iv, 16);
-//	}
-//
-//	return true;
-//}
-//
-//bool CAES::Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
-//{
-//	if (BufferInSize % 16 != 0)
-//	{
-//		return false;
-//	}
-//
-//	if (BufferOutSize < BufferInSize)
-//	{
-//		return false;
-//	}
-//
-//	if (EncryptType != AES_CFB)
-//	{
-//		return false;
-//	}
-//
-//	for (int i = 0; i < BufferInSize / 16; i++)
-//	{
-//		AesRoundEncrypt(Iv, Iv);
-//		for (int j = 0; j < 16; j++)
-//		{
-//			Iv[j] ^= *(pBufferIn + i * 16 + j);
-//		}
-//		memcpy(pBufferOut + i * 16, pBufferIn + i * 16, 16);
-//
-//		for (int j = 0; j < 16; j++)
-//		{
-//			Iv[j] ^= *(pBufferOut + i * 16 + j);
-//		}
-//
-//		for (int j = 0; j < 16; j++)
-//		{
-//			*(pBufferOut + i * 16 + j) ^= Iv[j];
-//		}
-//
-//		for (int j = 0; j < 16; j++)
-//		{
-//			Iv[j] ^= *(pBufferOut + i * 16 + j);
-//		}
-//	}
-//
-//	return true;
-//}
+bool CAES::Encrypt_CFB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, int CfbType)
+{
+    if (BufferOutSize < BufferInSize)
+    {
+        return false;
+    }
+
+    if (EncryptType != AES_CFB)
+    {
+        return false;
+    }
+
+	if (CfbType != CFB_8 && CfbType != CFB_128)
+    {
+        return false;
+    }
+
+	if (CfbType == CFB_8)
+	{
+        Encrypt_CFB_8(pBufferIn, BufferInSize, pBufferOut, BufferOutSize);
+	}
+	else if (CfbType == CFB_128)
+	{
+        Encrypt_CFB_128(pBufferIn, BufferInSize, pBufferOut, BufferOutSize);
+	}
+
+    return true;
+}
+
+void CAES::Encrypt_CFB_8(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize)
+{
+    unsigned char TempIv[16];
+    unsigned char TempBlock[16];
+
+    memcpy(TempIv, Iv, 16);
+    for (int i = 0; i < BufferInSize; ++i)
+    {
+        AesRoundEncrypt(TempIv, TempBlock);
+        pBufferOut[i] = TempBlock[0] ^ pBufferIn[i];
+        memmove(TempIv, TempIv + 1, 15);
+        TempIv[15] = pBufferOut[i];
+    }
+}
+
+void CAES::Encrypt_CFB_128(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
+{
+    int n = 0;
+
+    for (int i = 0; i < BufferInSize; ++i)
+    {
+        if (n == 0)
+        {
+            AesRoundEncrypt(Iv, Iv);
+        }
+
+        pBufferOut[i] = Iv[n] ^= pBufferIn[i];
+        n = (n + 1) % 16;
+    }
+}
+
+bool CAES::Decrypt_CFB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, int CfbType)
+{
+    if (BufferOutSize < BufferInSize)
+    {
+        return false;
+    }
+
+    if (EncryptType != AES_CFB)
+    {
+        return false;
+    }
+
+	if (CfbType != CFB_8 && CfbType != CFB_128)
+	{
+        return false;
+	}
+
+	if (CfbType == CFB_8)
+    {
+        Decrypt_CFB_8(pBufferIn, BufferInSize, pBufferOut, BufferOutSize);
+    }
+    else if (CfbType == CFB_128)
+    {
+        Decrypt_CFB_128(pBufferIn, BufferInSize, pBufferOut, BufferOutSize);
+    }
+
+    return true;
+}
+
+void CAES::Decrypt_CFB_8(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
+{
+    unsigned char TempIv[16];
+    unsigned char TempBlock[16];
+
+    memcpy(TempIv, Iv, 16);
+    for (int i = 0; i < BufferInSize; ++i)
+    {
+        AesRoundEncrypt(TempIv, TempBlock);
+        pBufferOut[i] = TempBlock[0] ^ pBufferIn[i];
+        memmove(TempIv, TempIv + 1, 15);
+        TempIv[15] = pBufferIn[i];
+    }
+}
+
+void CAES::Decrypt_CFB_128(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize)
+{
+    int n = 0;
+
+    for (int i = 0; i < BufferInSize; ++i)
+    {
+		if (n == 0)
+		{
+            AesRoundEncrypt(Iv, Iv);
+		}
+
+        pBufferOut[i] = Iv[n] ^ pBufferIn[i];
+        Iv[n] = pBufferIn[i];
+        n = (n + 1) % 16;
+    }
+}
 
 void CAES::AESGCMGenerateTable()
 {

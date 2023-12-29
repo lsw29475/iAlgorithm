@@ -14,13 +14,19 @@ public:
 		AES_256_TYPE = 32,
 	};
 
-	enum AES_ENCRYPT_MODE
+	enum AES_ENCRYPT_TYPE
 	{
 		AES_ECB = 1,
 		AES_CBC = 2,
 		AES_CFB = 3,
 		AES_GCM = 4,
 		AES_XTS = 5,
+	};
+
+	enum AES_CFB_TYPE
+	{
+		CFB_8 = 8,
+		CFB_128 = 128,
 	};
 
 private:
@@ -50,7 +56,7 @@ private:
 public:
 	void AesSetIv(unsigned char *pSetIv);
 
-	bool AesInit(unsigned char *pKey, int KeySize, unsigned char *pGCMNonce, int NonceSize, int EncryptMode);
+	bool AesInit(unsigned char *pKey, int KeySize, unsigned char *pGCMNonce, int NonceSizeIn, int EncryptMode);
 
 	bool Encrypt_ECB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 	bool Decrypt_ECB(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
@@ -58,8 +64,8 @@ public:
 	bool Encrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 	bool Decrypt_CBC(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 
-	//bool Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
-	//bool Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize);
+	bool Encrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize, int CfbType);
+	bool Decrypt_CFB(unsigned char* pBufferIn, int BufferInSize, unsigned char* pBufferOut, int BufferOutSize, int CfbType);
 
 	bool Encrypt_GCM(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, unsigned char *pAdditionData, int AdditionDataSize, unsigned char* pTag, int TagSize);
 	bool Decrypt_GCM(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize, unsigned char *pAdditionData, int AdditionDataSize, unsigned char* pTag, int TagSize);
@@ -91,6 +97,11 @@ private:
 	void AESGCMGenerateTable();
 	bool AESGCMHandleNonce(unsigned char *pAdditionData, int AdditionDataSize);
 	void AESGCMMult(unsigned char *pIn, unsigned char *pOut);
+
+	void Encrypt_CFB_8(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
+    void Encrypt_CFB_128(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
+    void Decrypt_CFB_8(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
+    void Decrypt_CFB_128(unsigned char *pBufferIn, int BufferInSize, unsigned char *pBufferOut, int BufferOutSize);
 
 private:
 	unsigned char xtime(unsigned char cByte);
