@@ -91,7 +91,7 @@ bool CRC4::SetKey(unsigned char* pKey, int KeySize)
 	{
 		delete[] pRC4Key;
 		pRC4Key = NULL;
-		KeySize = 0;
+		RC4KeySize = 0;
 	}
 
 	pRC4Key = new unsigned char[KeySize];
