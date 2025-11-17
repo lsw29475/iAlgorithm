@@ -69,7 +69,7 @@ const unsigned char CAES::InvSBox[256] = {
 	0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26,
 	0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d};
 
-const unsigned long CAES::Rcon[11] = {
+const unsigned int CAES::Rcon[11] = {
 	0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 
 const unsigned long long CAES::LastBox[16] = {
@@ -220,7 +220,7 @@ void CAES::MixColumns(unsigned char *State)
 
 	memcpy(temp, State, 16);
 
-	for (unsigned long j = 0; j < 4; j++)
+	for (unsigned int j = 0; j < 4; j++)
 	{
 		out[j][0] = xtime(temp[j][0]) ^ xtime(temp[j][1]) ^ temp[j][1] ^ temp[j][2] ^ temp[j][3];
 		out[j][1] = temp[j][0] ^ xtime(temp[j][1]) ^ xtime(temp[j][2]) ^ temp[j][2] ^ temp[j][3];
@@ -239,7 +239,7 @@ void CAES::InvMixColumns(unsigned char *State)
 
 	memcpy(temp, State, 16);
 
-	for (unsigned long j = 0; j < 4; j++)
+	for (unsigned int j = 0; j < 4; j++)
 	{
 		tmp = xtime(xtime(xtime(temp[j][0] ^ temp[j][1] ^ temp[j][2] ^ temp[j][3])));
 		out[j][0] = xtime(xtime(temp[j][0] ^ temp[j][2])) ^ temp[j][1] ^ temp[j][2] ^ temp[j][3] ^ xtime(temp[j][0] ^ temp[j][1]) ^ tmp;
@@ -255,7 +255,7 @@ void CAES::ShiftRows(unsigned char *pState)
 {
 	unsigned char Temp;
 
-	for (unsigned long i = 0; i <= 3; i++)
+	for (unsigned int i = 0; i <= 3; i++)
 	{
 		if (i == 1)
 		{
@@ -291,7 +291,7 @@ void CAES::InvShiftRows(unsigned char *pState)
 {
 	unsigned char Temp;
 
-	for (unsigned long i = 0; i <= 3; i++)
+	for (unsigned int i = 0; i <= 3; i++)
 	{
 		if (i == 1)
 		{
@@ -325,7 +325,7 @@ void CAES::InvShiftRows(unsigned char *pState)
 
 void CAES::AddRoundKey(unsigned char *pState, unsigned char *pRoundKey)
 {
-	for (unsigned long i = 0; i < 16; i++)
+	for (unsigned int i = 0; i < 16; i++)
 	{
 		pState[i] ^= pRoundKey[i];
 	}
@@ -645,7 +645,7 @@ void CAES::AESGCMGenerateTable()
 {
 	unsigned char h[16];
 	unsigned long long high, low;
-	unsigned long temp;
+	unsigned int temp;
 
 	memset(h, 0x00, sizeof(h));
 	memset(HTableHigh, 0x00, sizeof(HTableHigh));

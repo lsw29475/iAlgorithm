@@ -33,9 +33,9 @@ private:
 	int Nk;
 	int Nr;
 	static const int Nb;
-	unsigned long key[8];
+	unsigned int key[8];
 	unsigned char Iv[16];
-	unsigned long RoundKey[60];
+	unsigned int RoundKey[60];
 
 	int NonceSize;
 	unsigned char GCMNonce[16];
@@ -48,7 +48,7 @@ private:
 	int EncryptType;
 
 private:
-	static const unsigned long Rcon[11];
+	static const unsigned int Rcon[11];
 	static const unsigned char SBox[256];
 	static const unsigned char InvSBox[256];
 	static const unsigned long long LastBox[16];

@@ -15,7 +15,7 @@ iBit::iBit(unsigned char In)
 	setData(In);
 }
 
-iBit::iBit(unsigned long In)
+iBit::iBit(unsigned int In)
 {
 	setData(In);
 }
@@ -47,7 +47,7 @@ void iBit::setData(unsigned char In, int Bits)
 	m_Size = m_Data.size();
 }
 
-void iBit::setData(unsigned long In, int Bits)
+void iBit::setData(unsigned int In, int Bits)
 {
 	char Temp[16] = { 0x00 };
 
